@@ -1,0 +1,17 @@
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\BasicRenderer.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\BasicRenderer.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Camera.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\Camera.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\DescriptorPool.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\DescriptorPool.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\DescriptorSetLayout.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\DescriptorSetLayout.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\DescriptorWriter.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\DescriptorWriter.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\GameObject.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\GameObject.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\GraphicsPipeline.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\GraphicsPipeline.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\KeyboardController.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\KeyboardController.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\main.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\main.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Model.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\Model.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\PointLightRenderer.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\PointLightRenderer.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\Renderer.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\SwapChain.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanApplication.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\VulkanApplication.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanBuffer.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\VulkanBuffer.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\VulkanDevice.obj
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Window.cpp;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\VulkanAPI.dir\Debug\Window.obj

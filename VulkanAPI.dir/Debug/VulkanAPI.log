@@ -1,0 +1,21 @@
+﻿  BasicRenderer.cpp
+  Camera.cpp
+  DescriptorPool.cpp
+  DescriptorSetLayout.cpp
+  DescriptorWriter.cpp
+  GameObject.cpp
+  GraphicsPipeline.cpp
+  KeyboardController.cpp
+  main.cpp
+  Model.cpp
+  GLM_GTX_hash requires C++11 standard library support
+  PointLightRenderer.cpp
+  Renderer.cpp
+  SwapChain.cpp
+  VulkanApplication.cpp
+  VulkanBuffer.cpp
+  VulkanDevice.cpp
+  Window.cpp
+  Generating Code...
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  VulkanAPI.vcxproj -> C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\Debug\VulkanAPI.exe

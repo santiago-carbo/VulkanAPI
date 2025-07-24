@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35312.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanAPI", "VulkanAPI.vcxproj", "{9C52168F-953A-3534-8572-42530A53A873}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shaders", "Shaders.vcxproj", "{3BBB0B9E-C788-3BE7-8DC7-4BE4218602A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C52168F-953A-3534-8572-42530A53A873}.Debug|x64.ActiveCfg = Debug|x64
+		{9C52168F-953A-3534-8572-42530A53A873}.Debug|x64.Build.0 = Debug|x64
+		{9C52168F-953A-3534-8572-42530A53A873}.Release|x64.ActiveCfg = Release|x64
+		{9C52168F-953A-3534-8572-42530A53A873}.Release|x64.Build.0 = Release|x64
+		{3BBB0B9E-C788-3BE7-8DC7-4BE4218602A4}.Debug|x64.ActiveCfg = Debug|x64
+		{3BBB0B9E-C788-3BE7-8DC7-4BE4218602A4}.Release|x64.ActiveCfg = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A1BDF6B4-CC6C-3E29-9D6A-9FFCB9F474DF}
+	EndGlobalSection
+EndGlobal
