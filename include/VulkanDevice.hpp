@@ -18,6 +18,16 @@ struct QueueFamilyIndices
     bool hasGraphicsFamily = false;
     bool hasPresentFamily = false;
     
+    uint32_t GetGraphicsFamily() const 
+    { 
+        return graphicsFamily; 
+    }
+
+    uint32_t GetPresentFamily() const 
+    { 
+        return presentFamily; 
+    }
+
     bool isComplete() const 
     { 
         return (hasGraphicsFamily && hasPresentFamily); 
@@ -41,9 +51,19 @@ class VulkanDevice
         VulkanDevice(VulkanDevice&&) = delete;
         VulkanDevice& operator=(VulkanDevice&&) = delete;
 
+        VkInstance getInstance() const
+        {
+            return instance;
+        }
+
         VkCommandPool getCommandPool() const 
         { 
             return (commandPool); 
+        }
+
+        VkPhysicalDevice getPhysicalDevice() const
+        {
+            return (physicalDevice);
         }
 
         VkDevice getDevice() const 

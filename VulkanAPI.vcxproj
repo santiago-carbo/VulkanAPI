@@ -27,6 +27,7 @@
     <ClInclude Include="include\DescriptorPool.hpp" />
     <ClInclude Include="include\DescriptorSetLayout.hpp" />
     <ClInclude Include="include\DescriptorWriter.hpp" />
+    <ClInclude Include="include\EditorUI.hpp" />
     <ClInclude Include="include\FrameContext.hpp" />
     <ClInclude Include="include\GameObject.hpp" />
     <ClInclude Include="include\GraphicsPipeline.hpp" />
@@ -41,11 +42,18 @@
     <ClInclude Include="include\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="external\imgui\imgui.cpp" />
+    <ClCompile Include="external\imgui\imgui_draw.cpp" />
+    <ClCompile Include="external\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="external\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="external\imgui\imgui_tables.cpp" />
+    <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\BasicRenderer.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\DescriptorPool.cpp" />
     <ClCompile Include="src\DescriptorSetLayout.cpp" />
     <ClCompile Include="src\DescriptorWriter.cpp" />
+    <ClCompile Include="src\EditorUI.cpp" />
     <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\GraphicsPipeline.cpp" />
     <ClCompile Include="src\KeyboardController.cpp" />
@@ -128,7 +136,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -177,7 +185,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -227,7 +235,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -277,7 +285,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external;C:\VulkanSDK\1.4.313.2\Include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\tinyobjloader;C:\dev\lib\glfw-3.4.bin.WIN64\include;C:\dev\lib\glm;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\include;C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\external\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

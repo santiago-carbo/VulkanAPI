@@ -10,13 +10,24 @@
 
 VulkanApplication::VulkanApplication() 
 {
+    vulkanDevice = std::make_unique<VulkanDevice>(editorUI.getWindow());
+    renderer = std::make_unique<Renderer>(editorUI.getWindow(), *vulkanDevice);
+
+    editorUI.init(vulkanDevice->getInstance(),
+        vulkanDevice->getPhysicalDevice(),
+        vulkanDevice->getDevice(),
+        vulkanDevice->getQueueFamilyIndices().GetGraphicsFamily(),
+        vulkanDevice->getGraphicsQueue(),
+        renderer->getSwapChainRenderPass(),
+        renderer->getSwapChainImageCount());
+
     std::vector<VkDescriptorPoolSize> poolSizes = 
     {
      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT}
     };
 
     globalPool = std::make_unique<DescriptorPool>(
-        vulkanDevice,
+        *vulkanDevice,
         SwapChain::MAX_FRAMES_IN_FLIGHT,
         0,
         poolSizes
@@ -36,7 +47,7 @@ void VulkanApplication::run()
     for (int i = 0; i < uboBuffers.size(); ++i) 
     {
         uboBuffers[i] = std::make_unique<VulkanBuffer>(
-            vulkanDevice,
+            *vulkanDevice,
             sizeof(GlobalUbo),
             1,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -61,7 +72,7 @@ void VulkanApplication::run()
     };
 
     std::unique_ptr<DescriptorSetLayout> globalSetLayout =
-        std::make_unique<DescriptorSetLayout>(vulkanDevice, globalBindings);
+        std::make_unique<DescriptorSetLayout>(*vulkanDevice, globalBindings);
 
     std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
@@ -75,14 +86,14 @@ void VulkanApplication::run()
     }
 
     BasicRenderer basicRenderer(
-        vulkanDevice,
-        renderer.getSwapChainRenderPass(),
+        *vulkanDevice,
+        renderer->getSwapChainRenderPass(),
         globalSetLayout->get()
     );
 
     PointLightSystem pointLightSystem(
-        vulkanDevice,
-        renderer.getSwapChainRenderPass(),
+        *vulkanDevice,
+        renderer->getSwapChainRenderPass(),
         globalSetLayout->get()
     );
 
@@ -94,7 +105,7 @@ void VulkanApplication::run()
     std::chrono::time_point<std::chrono::high_resolution_clock> currentTime = 
         std::chrono::high_resolution_clock::now();
 
-    while (!window.shouldClose()) 
+    while (!editorUI.getWindow().shouldClose())
     {
         glfwPollEvents();
         std::chrono::time_point<std::chrono::high_resolution_clock> newTime = 
@@ -103,15 +114,15 @@ void VulkanApplication::run()
         float frameTime = std::chrono::duration<float>(newTime - currentTime).count();
         currentTime = newTime;
 
-        cameraController.update(window.getGLFWwindow(), frameTime, viewerObject);
+        cameraController.update(editorUI.getWindow().getGLFWwindow(), frameTime, viewerObject);
         camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
-        float aspect = renderer.getAspectRatio();
+        float aspect = renderer->getAspectRatio();
         camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
-        if (VkCommandBuffer commandBuffer = renderer.beginFrame()) 
+        if (VkCommandBuffer commandBuffer = renderer->beginFrame()) 
         {
-            int frameIndex = renderer.getFrameIndex();
+            int frameIndex = renderer->getFrameIndex();
 
             FrameInfo frameInfo{
                 frameIndex,
@@ -130,22 +141,29 @@ void VulkanApplication::run()
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             uboBuffers[frameIndex]->flush();
 
-            renderer.beginSwapChainRenderPass(commandBuffer);
+            renderer->beginSwapChainRenderPass(commandBuffer);
+
+            editorUI.beginFrame();
+            editorUI.drawGameObjects(gameObjects);
 
             basicRenderer.render(frameInfo);
             pointLightSystem.render(frameInfo);
 
-            renderer.endSwapChainRenderPass(commandBuffer);
-            renderer.endFrame();
+            editorUI.endFrame(commandBuffer);
+
+            renderer->endSwapChainRenderPass(commandBuffer);
+            renderer->endFrame();
         }
     }
 
-    vkDeviceWaitIdle(vulkanDevice.getDevice());
+    vkDeviceWaitIdle(vulkanDevice->getDevice());
+
+    editorUI.cleanup(vulkanDevice->getDevice());
 }
 
 void VulkanApplication::loadGameObjects() 
 {
-    std::shared_ptr<Model> model = Model::fromFile(vulkanDevice, "models/room.obj");
+    std::shared_ptr<Model> model = Model::fromFile(*vulkanDevice, "models/room.obj");
 
     GameObject room = GameObject::create();
     room.model = model;
@@ -215,7 +233,5 @@ void VulkanApplication::loadGameObjects()
 
         gameObjects.emplace(pointLight.getId(), std::move(pointLight));
     }
-
-
 }
 

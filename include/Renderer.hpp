@@ -17,6 +17,11 @@ class Renderer
             return (swapChain->getRenderPass()); 
         }
 
+        size_t getSwapChainImageCount() const
+        {
+            return (swapChain->imageCount());
+        }
+
         float getAspectRatio() const 
         { 
             return (swapChain->extentAspectRatio()); 

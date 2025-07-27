@@ -5,6 +5,7 @@
 #include "GameObject.hpp"
 #include "Renderer.hpp"
 #include "Window.hpp"
+#include "EditorUI.hpp"
 
 #include <memory>
 #include <vector>
@@ -14,9 +15,6 @@
 class VulkanApplication 
 {
 	public:
-		static constexpr int WIDTH = 1600;
-		static constexpr int HEIGHT = 900;
-
 		VulkanApplication();
 		~VulkanApplication();
 
@@ -28,9 +26,11 @@ class VulkanApplication
 	private:
 		void loadGameObjects();
 
-		Window window {WIDTH, HEIGHT, "Vulkan API"};
-		VulkanDevice vulkanDevice {window};
-		Renderer renderer {window, vulkanDevice};
+		EditorUI editorUI;
+
+		std::unique_ptr<VulkanDevice> vulkanDevice;
+		std::unique_ptr<Renderer> renderer;
+
 		std::unique_ptr<DescriptorPool> globalPool;
 		std::unordered_map<unsigned int, GameObject> gameObjects;
 };
