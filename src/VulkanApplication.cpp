@@ -105,6 +105,8 @@ void VulkanApplication::run()
     std::chrono::time_point<std::chrono::high_resolution_clock> currentTime = 
         std::chrono::high_resolution_clock::now();
 
+    editorUI.setPerf(&renderer->getPerf());
+
     while (!editorUI.getWindow().shouldClose())
     {
         glfwPollEvents();
@@ -123,6 +125,9 @@ void VulkanApplication::run()
         if (VkCommandBuffer commandBuffer = renderer->beginFrame()) 
         {
             int frameIndex = renderer->getFrameIndex();
+
+            renderer->getPerf().beginCpuFrame();
+            renderer->getPerf().recordGpu(commandBuffer, static_cast<uint32_t>(frameIndex));
 
             FrameInfo frameInfo{
                 frameIndex,
@@ -152,7 +157,14 @@ void VulkanApplication::run()
             editorUI.endFrame(commandBuffer);
 
             renderer->endSwapChainRenderPass(commandBuffer);
+
+            renderer->getPerf().recordGpu(commandBuffer, static_cast<uint32_t>(frameIndex));
+
             renderer->endFrame();
+
+            renderer->getPerf().endCpuFrame();
+            renderer->getPerf().resolveGpu(static_cast<uint32_t>(frameIndex));
+            renderer->getPerf().tickMonitors();
         }
     }
 

@@ -9,6 +9,12 @@ Renderer::Renderer(Window& window, VulkanDevice& device)
 {
     recreateSwapChain();
     createCommandBuffers();
+
+    VkPhysicalDeviceProperties props;
+    std::memset(&props, 0, sizeof(props));
+    vkGetPhysicalDeviceProperties(vulkanDevice.getPhysicalDevice(), &props);
+    perf.init(vulkanDevice.getDevice(), SwapChain::MAX_FRAMES_IN_FLIGHT, 
+        props.limits.timestampPeriod);
 }
 
 Renderer::~Renderer() 
@@ -103,6 +109,9 @@ VkCommandBuffer Renderer::beginFrame()
         throw std::runtime_error("💥[Vulkan API] Failed to begin recording command buffer.");
     }
 
+    perf.beginCpuFrame();
+    perf.recordGpu(commandBuffer, currentFrameIndex);
+
     return commandBuffer;
 }
 
@@ -111,6 +120,8 @@ void Renderer::endFrame()
     assert(isFrameStarted && "💥[Vulkan API] Can't call endFrame while frame is not in progress.");
 
     VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
+
+    perf.recordGpu(commandBuffer, currentFrameIndex);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) 
     {
@@ -130,6 +141,11 @@ void Renderer::endFrame()
     }
 
     isFrameStarted = false;
+
+    perf.endCpuFrame();
+    perf.resolveGpu(currentFrameIndex);
+    perf.tickMonitors();
+
     currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 

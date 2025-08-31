@@ -33,6 +33,7 @@
     <ClInclude Include="include\GraphicsPipeline.hpp" />
     <ClInclude Include="include\KeyboardController.hpp" />
     <ClInclude Include="include\Model.hpp" />
+    <ClInclude Include="include\Perf.hpp" />
     <ClInclude Include="include\PointLightRenderer.hpp" />
     <ClInclude Include="include\Renderer.hpp" />
     <ClInclude Include="include\SwapChain.hpp" />
@@ -59,6 +60,7 @@
     <ClCompile Include="src\KeyboardController.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\Perf.cpp" />
     <ClCompile Include="src\PointLightRenderer.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\SwapChain.cpp" />

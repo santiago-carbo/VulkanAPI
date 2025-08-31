@@ -11,6 +11,8 @@
 #include <tiny_obj_loader.h>
 #include "GameObject.hpp"
 
+class Perf;
+
 class EditorUI 
 {
     public:
@@ -33,6 +35,11 @@ class EditorUI
         void endFrame(VkCommandBuffer commandBuffer);
         void cleanup(VkDevice device);
 
+        void setPerf(Perf* p) 
+        {
+            perf = p;
+        }
+
         Window& getWindow()
         {    
             return window; 
@@ -43,5 +50,6 @@ class EditorUI
 
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
         Window window{WIDTH, HEIGHT, "Vulkan API"};
+        Perf* perf = nullptr;
 };
 

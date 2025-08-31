@@ -1,4 +1,5 @@
 #include "EditorUI.hpp"
+#include "Perf.hpp"
 #include <glm/gtc/type_ptr.hpp>
 #include <stdexcept>
 
@@ -98,6 +99,11 @@ void EditorUI::drawGameObjects(std::unordered_map<unsigned int, GameObject>& gam
     }
 
     ImGui::End();
+
+    if (perf) 
+    {
+        perf->drawImGui();
+    }
 }
 
 void EditorUI::endFrame(VkCommandBuffer commandBuffer)

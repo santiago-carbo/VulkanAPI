@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "SwapChain.hpp"
+#include "Perf.hpp"
 
 
 class Renderer 
@@ -48,6 +49,16 @@ class Renderer
             return (currentFrameIndex);
         }
 
+        Perf& getPerf() 
+        { 
+            return perf; 
+        }
+
+        const Perf& getPerf() const 
+        { 
+            return perf; 
+        }
+
         VkCommandBuffer beginFrame();
         void endFrame();
         void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
@@ -65,4 +76,5 @@ class Renderer
         uint32_t currentImageIndex;
         int currentFrameIndex {0};
         bool isFrameStarted {false};
+        Perf perf;
 };
