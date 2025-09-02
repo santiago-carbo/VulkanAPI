@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: Perf.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #pragma once
 
 #include <vulkan/vulkan.h>

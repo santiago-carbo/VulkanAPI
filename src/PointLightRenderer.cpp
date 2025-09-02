@@ -1,4 +1,12 @@
-﻿#include "PointLightRenderer.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: PointLightRenderer.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "PointLightRenderer.hpp"
 
 #include <map>
 #include <stdexcept>

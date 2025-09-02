@@ -1,4 +1,12 @@
-﻿#include "VulkanApplication.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: VulkanApplication.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "VulkanApplication.hpp"
 
 #include "DescriptorWriter.hpp"
 #include "KeyboardController.hpp"

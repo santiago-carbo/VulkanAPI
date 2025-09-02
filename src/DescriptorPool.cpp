@@ -1,4 +1,12 @@
-﻿#include "DescriptorPool.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: DescriptorPool.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "DescriptorPool.hpp"
 
 #include <stdexcept>
 

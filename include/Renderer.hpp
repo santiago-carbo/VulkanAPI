@@ -1,4 +1,12 @@
-﻿#pragma once
+﻿/*
+ * Project: VulkanAPI
+ * File: Renderer.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#pragma once
 
 #include "SwapChain.hpp"
 #include "Perf.hpp"

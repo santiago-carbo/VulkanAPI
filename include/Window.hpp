@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: Window.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN

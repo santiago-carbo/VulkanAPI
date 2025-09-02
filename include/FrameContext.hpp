@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: FrameContext.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #pragma once
 
 #include "Camera.hpp"

@@ -1,4 +1,12 @@
-﻿#include "GraphicsPipeline.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: GraphicsPipeline.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "GraphicsPipeline.hpp"
 #include "Model.hpp"
 
 #include <fstream>

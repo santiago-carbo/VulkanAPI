@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: Perf.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #include "Perf.hpp"
 #include <algorithm>
 #include <cmath> 

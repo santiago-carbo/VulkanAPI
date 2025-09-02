@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: GraphicsPipeline.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #pragma once
 
 #include "VulkanDevice.hpp"

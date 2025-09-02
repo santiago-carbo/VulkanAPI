@@ -1,4 +1,12 @@
-﻿#include "BasicRenderer.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: BasicRenderer.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "BasicRenderer.hpp"
 
 #include <stdexcept>
 

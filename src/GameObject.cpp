@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: GameObject.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #include "GameObject.hpp"
 
 glm::mat4 Transform::matrix() const 

@@ -1,4 +1,12 @@
-﻿#include "Model.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: Model.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "Model.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>

@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: EditorUI.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #include "EditorUI.hpp"
 #include "Perf.hpp"
 #include <glm/gtc/type_ptr.hpp>

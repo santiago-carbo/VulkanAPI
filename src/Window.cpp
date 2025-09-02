@@ -1,4 +1,12 @@
-﻿#include "Window.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: Window.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "Window.hpp"
 
 #include <stdexcept>
 

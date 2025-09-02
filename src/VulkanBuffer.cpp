@@ -1,9 +1,15 @@
 ﻿/*
+ * Project: VulkanAPI
+ * File: VulkanBuffer.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
  * Encapsulates a vulkan buffer
  *
  * Initially based off VulkanBuffer by Sascha Willems -
  * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
  */
+
 
 #include "VulkanBuffer.hpp"
 

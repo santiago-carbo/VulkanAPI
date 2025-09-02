@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: VulkanDevice.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #pragma once
 
 #include "Window.hpp"

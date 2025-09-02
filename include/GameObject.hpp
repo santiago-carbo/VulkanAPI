@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: GameObject.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #pragma once
 
 #include "Model.hpp"

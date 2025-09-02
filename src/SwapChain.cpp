@@ -1,4 +1,12 @@
-﻿#include "SwapChain.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: SwapChain.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "SwapChain.hpp"
 
 #include <array>
 #include <limits>

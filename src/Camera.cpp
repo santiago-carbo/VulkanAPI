@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: Camera.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #include "Camera.hpp"
 
 void Camera::setOrthographicProjection(

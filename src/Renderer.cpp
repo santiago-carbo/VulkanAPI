@@ -1,4 +1,12 @@
-﻿#include "Renderer.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: Renderer.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "Renderer.hpp"
 
 #include <array>
 #include <stdexcept>

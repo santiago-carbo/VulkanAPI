@@ -1,4 +1,12 @@
-﻿#include "VulkanDevice.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: VulkanDevice.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "VulkanDevice.hpp"
 
 #include <iostream>
 #include <unordered_set>

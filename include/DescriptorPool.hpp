@@ -1,3 +1,11 @@
+/*
+ * Project: VulkanAPI
+ * File: DescriptorPool.hpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #pragma once
 
 #include "VulkanDevice.hpp"

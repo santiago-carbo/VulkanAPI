@@ -1,15 +1,60 @@
-﻿  EditorUI.cpp
+﻿  BasicRenderer.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\BasicRenderer.cpp(56,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+  Camera.cpp
+  DescriptorPool.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\DescriptorPool.cpp(29,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+  DescriptorSetLayout.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\DescriptorSetLayout.cpp(34,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+  DescriptorWriter.cpp
+  EditorUI.cpp
+  GameObject.cpp
+  GraphicsPipeline.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\GraphicsPipeline.cpp(38,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\GraphicsPipeline.cpp(116,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\GraphicsPipeline.cpp(129,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+  KeyboardController.cpp
+  Model.cpp
+  GLM_GTX_hash requires C++11 standard library support
   Perf.cpp
+  PointLightRenderer.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\PointLightRenderer.cpp(58,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
   Renderer.cpp
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(49,17): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(69,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(97,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(109,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(128,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(140,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(57,17): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(77,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(105,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(117,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(136,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Renderer.cpp(148,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+  SwapChain.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp(128,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp(162,38): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp(213,38): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp(272,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp(299,38): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp(336,38): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\SwapChain.cpp(451,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
   VulkanApplication.cpp
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanApplication.cpp(22,41): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanApplication.cpp(30,41): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
+  VulkanBuffer.cpp
+  VulkanDevice.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(89,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(126,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(139,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(156,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(205,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(224,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(288,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(360,17): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(484,30): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(504,30): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(523,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(536,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(628,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(641,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\VulkanDevice.cpp(646,34): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+  Window.cpp
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\Window.cpp(39,30): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
   main.cpp
-C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\main.cpp(14,22): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
+C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\src\main.cpp(22,22): warning C4566: character represented by universal-character-name '\U0001F4A5' cannot be represented in the current code page (1252)
   Generating Code...
   VulkanAPI.vcxproj -> C:\Users\Santiago\Documents\MasterSoftware\TFM\VulkanAPI\build\Release\VulkanAPI.exe

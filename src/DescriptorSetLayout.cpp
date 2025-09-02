@@ -1,4 +1,12 @@
-﻿#include "DescriptorSetLayout.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: DescriptorSetLayout.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "DescriptorSetLayout.hpp"
 
 #include <cassert>
 #include <stdexcept>

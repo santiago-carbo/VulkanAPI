@@ -1,4 +1,12 @@
-﻿#include "VulkanApplication.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: main.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "VulkanApplication.hpp"
 
 #include <iostream>
 

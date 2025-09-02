@@ -1,4 +1,12 @@
-﻿#include "DescriptorWriter.hpp"
+﻿/*
+ * Project: VulkanAPI
+ * File: DescriptorWriter.cpp
+ * Author: Santiago Carbó García
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
+#include "DescriptorWriter.hpp"
 
 #include <cassert>
 
