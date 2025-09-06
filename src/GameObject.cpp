@@ -8,7 +8,9 @@
 
 #include "GameObject.hpp"
 
-glm::mat4 Transform::matrix() const 
+ /// \brief Devuelve la matriz de modelo a partir de T, R y S.
+ /// \return Matriz 4x4 para transformar de espacio local a mundo.
+glm::mat4 Transform::matrix() const
 {
     const float c3 = glm::cos(rotation.z);
     const float s3 = glm::sin(rotation.z);
@@ -16,7 +18,7 @@ glm::mat4 Transform::matrix() const
     const float s2 = glm::sin(rotation.x);
     const float c1 = glm::cos(rotation.y);
     const float s1 = glm::sin(rotation.y);
-    
+
     return glm::mat4{
         {
             scale.x * (c1 * c3 + s1 * s2 * s3),
@@ -36,10 +38,14 @@ glm::mat4 Transform::matrix() const
             scale.z * (c1 * c2),
             0.0f,
         },
-        {translation.x, translation.y, translation.z, 1.0f}};
+        {translation.x, translation.y, translation.z, 1.0f} };
 }
 
-glm::mat3 Transform::normalMatrix() const 
+/// \brief Devuelve la matriz de normales asociada a la transformación.
+/// \details Normalmente es \c transpose(inverse(mat3(M))) para mantener
+/// las normales correctas ante escalas no uniformes.
+/// \return Matriz 3x3 para transformar normales a espacio de mundo.
+glm::mat3 Transform::normalMatrix() const
 {
     const float c3 = glm::cos(rotation.z);
     const float s3 = glm::sin(rotation.z);
@@ -68,14 +74,24 @@ glm::mat3 Transform::normalMatrix() const
     };
 }
 
-GameObject GameObject::create() 
+/// \brief Crea un nuevo objeto con \c id único.
+/// \details El \c id se genera internamente (normalmente de un contador global).
+/// \return Instancia de \c GameObject.
+GameObject GameObject::create()
 {
     static unsigned int currentId = 0;
 
     return GameObject{currentId++};
 }
 
-GameObject GameObject::makePointLight(float intensity, float radius, glm::vec3 color) 
+/// \brief Factoría para crear un \c GameObject con componente de luz puntual.
+/// \details Inicializa \c light y establece color, intensidad y un radio
+/// lógico si la representación lo requiere (p.ej., para debug).
+/// \param intensity Intensidad luminosa inicial.
+/// \param radius Radio lógico (útil si se visualiza la luz como esfera).
+/// \param color Color base del emisor (se usa \c GameObject::color).
+/// \return \c GameObject configurado como luz puntual.
+GameObject GameObject::makePointLight(float intensity, float radius, glm::vec3 color)
 {
     GameObject obj = GameObject::create();
     obj.color = color;
@@ -85,3 +101,4 @@ GameObject GameObject::makePointLight(float intensity, float radius, glm::vec3 c
 
     return (obj);
 }
+

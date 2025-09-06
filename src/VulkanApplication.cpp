@@ -14,8 +14,19 @@
 #include "BasicRenderer.hpp"
 
 #include <chrono>
+#include <thread>
 
 
+struct Threads
+{
+    VkCommandPool pool{VK_NULL_HANDLE};
+    std::vector<VkCommandBuffer> sec;
+};
+
+
+/// \brief Construye la aplicación y prepara los componentes básicos.
+/// \details No inicia el bucle de ejecución. La inicialización
+/// completa se realiza en \c run .
 VulkanApplication::VulkanApplication() 
 {
     vulkanDevice = std::make_unique<VulkanDevice>(editorUI.getWindow());
@@ -44,10 +55,15 @@ VulkanApplication::VulkanApplication()
     loadGameObjects();
 }
 
+/// \brief Libera los recursos administrados por la aplicación.
 VulkanApplication::~VulkanApplication() 
 {
 }
 
+/// \brief Ejecuta la aplicación.
+/// \details Lleva a cabo la inicialización restante, entra en el
+/// bucle principal de render y procesa eventos hasta que el usuario
+/// cierra la ventana. Al salir, sincroniza y limpia recursos.
 void VulkanApplication::run() 
 {
     std::vector<std::unique_ptr<VulkanBuffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -98,6 +114,28 @@ void VulkanApplication::run()
         renderer->getSwapChainRenderPass(),
         globalSetLayout->get()
     );
+
+    const int M = std::max(2u, std::thread::hardware_concurrency());
+    std::vector<Threads> workers(M);
+
+    for (int t = 0; t < M; ++t) 
+    {
+        VkCommandPoolCreateInfo pci{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
+        pci.queueFamilyIndex = vulkanDevice->getQueueFamilyIndices().GetGraphicsFamily();
+        pci.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+        vkCreateCommandPool(vulkanDevice->getDevice(), &pci, nullptr, &workers[t].pool);
+
+        workers[t].sec.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
+
+        VkCommandBufferAllocateInfo ai{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+
+        ai.commandPool = workers[t].pool;
+        ai.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        ai.commandBufferCount = (uint32_t)workers[t].sec.size();
+
+        vkAllocateCommandBuffers(vulkanDevice->getDevice(), &ai, workers[t].sec.data());
+    }
 
     PointLightSystem pointLightSystem(
         *vulkanDevice,
@@ -159,15 +197,79 @@ void VulkanApplication::run()
             editorUI.beginFrame();
             editorUI.drawGameObjects(gameObjects);
 
-            basicRenderer.render(frameInfo);
+            /// Una hebra
+            //basicRenderer.render(frameInfo);
+
+            // Multi hebra
+            VkCommandBufferInheritanceInfo inherit 
+                {VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO};
+
+            inherit.renderPass = renderer->getSwapChainRenderPass();
+            inherit.subpass = 0;
+            inherit.framebuffer = renderer->getCurrentFrameBuffer();
+
+            std::vector<std::pair<unsigned, GameObject*>> view; view.reserve(gameObjects.size());
+
+            for (auto& go : gameObjects)
+            {
+                view.push_back({go.first, &go.second });
+            }
+
+            const size_t N = view.size();
+            const size_t chunk = (N + M - 1)/M;
+
+            std::vector<std::thread> threads;
+            threads.reserve(M);
+
+            for (int t = 0; t < M; ++t) 
+            {
+                const size_t begin = std::min(N, size_t(t) * chunk);
+                const size_t end = std::min(N, begin + chunk);
+
+                if (begin >= end)
+                {
+                    break;
+                }
+
+                VkCommandBuffer cbSec = workers[t].sec[frameIndex];
+
+                VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+                bi.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT | 
+                    VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+                bi.pInheritanceInfo = &inherit;
+                vkBeginCommandBuffer(cbSec, &bi);
+
+                threads.emplace_back([&, cbSec, begin, end] 
+                {
+                    basicRenderer.recordRange(frameInfo, cbSec, begin, end);
+                    vkEndCommandBuffer(cbSec);
+                });
+            }
+
+            for (std::thread& th : threads)
+            {
+                th.join();
+            }
+
+            std::vector<VkCommandBuffer> execList;
+
+            for (int t = 0; t < (int)threads.size(); ++t) 
+            {
+                execList.push_back(workers[t].sec[frameIndex]);
+            }
+
+            if (!execList.empty())
+            {
+                vkCmdExecuteCommands(commandBuffer, (uint32_t)execList.size(), execList.data());
+            }
+
             pointLightSystem.render(frameInfo);
 
             editorUI.endFrame(commandBuffer);
 
             renderer->endSwapChainRenderPass(commandBuffer);
-
             renderer->getPerf().recordGpu(commandBuffer, static_cast<uint32_t>(frameIndex));
-
             renderer->endFrame();
 
             renderer->getPerf().endCpuFrame();
@@ -181,6 +283,9 @@ void VulkanApplication::run()
     editorUI.cleanup(vulkanDevice->getDevice());
 }
 
+/// \brief Carga y registra los \c GameObject de la escena.
+/// \details Construye la geometría y las luces necesarias para
+/// validar el motor, añadiéndolas al contenedor \c gameObjects .
 void VulkanApplication::loadGameObjects() 
 {
     std::shared_ptr<Model> model = Model::fromFile(*vulkanDevice, "models/room.obj");

@@ -8,34 +8,42 @@
 
 #include "Perf.hpp"
 #include <algorithm>
-#include <cmath> 
+#include <cmath>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
-void GpuTimer::init(VkDevice dev, uint32_t framesInFlight, double tsPeriodNs) 
+ /// \brief Inicializa el temporizador de GPU.
+ /// \param device Dispositivo lógico.
+ /// \param framesInFlight Nº de frames en vuelo.
+ /// \param timestampPeriodNs Periodo de timestamp del dispositivo.
+void GpuTimer::init(VkDevice dev, uint32_t framesInFlight, double tsPeriodNs)
 {
     device = dev;
     timestampPeriodNs = tsPeriodNs;
 
-    VkQueryPoolCreateInfo ci{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
+    VkQueryPoolCreateInfo ci{ VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO };
     ci.queryType = VK_QUERY_TYPE_TIMESTAMP;
-    ci.queryCount = framesInFlight *queriesPerFrame;
+    ci.queryCount = framesInFlight * queriesPerFrame;
     vkCreateQueryPool(device, &ci, nullptr, &pool);
 }
 
-void GpuTimer::destroy() 
+/// \brief Libera el \c VkQueryPool y recursos asociados.
+void GpuTimer::destroy()
 {
-    if (pool) 
+    if (pool)
     {
         vkDestroyQueryPool(device, pool, nullptr);
         pool = VK_NULL_HANDLE;
     }
 }
 
-void GpuTimer::record(VkCommandBuffer cb, uint32_t frameIndex) 
+/// \brief Registra timestamps de inicio y fin en el \c commandBuffer.
+/// \param cb Command buffer donde insertar las consultas.
+/// \param frameIndex Índice de frame en vuelo.
+void GpuTimer::record(VkCommandBuffer cb, uint32_t frameIndex)
 {
     const uint32_t base = frameIndex * queriesPerFrame;
     vkResetQueryPool(device, pool, base, queriesPerFrame);
@@ -43,7 +51,11 @@ void GpuTimer::record(VkCommandBuffer cb, uint32_t frameIndex)
     vkCmdWriteTimestamp(cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, pool, base + 1);
 }
 
-bool GpuTimer::resolve(uint32_t frameIndex, double& outGpuMs) 
+/// \brief Lee y resuelve las consultas de \c frameIndex a milisegundos.
+/// \param frameIndex Índice de frame en vuelo a resolver.
+/// \param outGpuMs Salida: duración en ms.
+/// \return \c true si los resultados estaban listos y \c outGpuMs es válido.
+bool GpuTimer::resolve(uint32_t frameIndex, double& outGpuMs)
 {
     const uint32_t base = frameIndex * queriesPerFrame;
     uint64_t ts[2] = {};
@@ -60,20 +72,24 @@ bool GpuTimer::resolve(uint32_t frameIndex, double& outGpuMs)
 
     const double dtNs = double(ts[1] - ts[0]) * timestampPeriodNs;
     outGpuMs = dtNs / 1.0e6;
-
     return (true);
 }
 
-static inline unsigned long long toULL(const FILETIME& ft) 
+/// \brief Convierte un \c FILETIME a entero sin signo de 64 bits.
+/// \details Función auxiliar específica de Windows.
+/// \param ft Estructura \c FILETIME.
+/// \return Valor de 64 bits correspondiente.
+static inline unsigned long long toULL(const FILETIME& ft)
 {
-    ULARGE_INTEGER u; 
-    u.LowPart = ft.dwLowDateTime; 
-    u.HighPart = ft.dwHighDateTime; 
-    
+    ULARGE_INTEGER u;
+    u.LowPart = ft.dwLowDateTime;
+    u.HighPart = ft.dwHighDateTime;
+
     return (u.QuadPart);
 }
 
-void CpuUsageMonitor::init() 
+/// \brief Inicializa el monitor.
+void CpuUsageMonitor::init()
 {
     accMs = 0.0;
 
@@ -83,7 +99,9 @@ void CpuUsageMonitor::init()
 #endif
 }
 
-void CpuUsageMonitor::tick(double frameCpuMs) 
+/// \brief Acumula \c frameCpuMs y actualiza los porcentajes de uso periódicamente.
+/// \param frameCpuMs Duración del frame en CPU (ms) para temporización de muestreo.
+void CpuUsageMonitor::tick(double frameCpuMs)
 {
     accMs += frameCpuMs;
 
@@ -97,18 +115,18 @@ void CpuUsageMonitor::tick(double frameCpuMs)
 #ifdef _WIN32
     FILETIME idleFT {}, kernelFT {}, userFT {};
 
-    if (GetSystemTimes(&idleFT, &kernelFT, &userFT)) 
+    if (GetSystemTimes(&idleFT, &kernelFT, &userFT))
     {
         const auto idle = toULL(idleFT), kernel = toULL(kernelFT), user = toULL(userFT);
-        
-        if (!sysInited) 
+
+        if (!sysInited)
         {
-            lastIdle = idle; 
-            lastKernel = kernel; 
-            lastUser = user; 
+            lastIdle = idle;
+            lastKernel = kernel;
+            lastUser = user;
             sysInited = true;
         }
-        else 
+        else
         {
             const auto idleDiff = idle - lastIdle;
             const auto kernDiff = kernel - lastKernel;
@@ -117,8 +135,8 @@ void CpuUsageMonitor::tick(double frameCpuMs)
 
             sysPct = (total > 0) ? float((total - idleDiff) * 100.0 / double(total)) : 0.0f;
 
-            lastIdle = idle; 
-            lastKernel = kernel; 
+            lastIdle = idle;
+            lastKernel = kernel;
             lastUser = user;
         }
     }
@@ -126,20 +144,20 @@ void CpuUsageMonitor::tick(double frameCpuMs)
     FILETIME nowFT {}, cFT {}, eFT {}, kFT {}, uFT {};
     GetSystemTimeAsFileTime(&nowFT);
 
-    if (GetProcessTimes(GetCurrentProcess(), &cFT, &eFT, &kFT, &uFT)) 
+    if (GetProcessTimes(GetCurrentProcess(), &cFT, &eFT, &kFT, &uFT))
     {
         const auto now = toULL(nowFT);
         const auto k = toULL(kFT);
         const auto u = toULL(uFT);
 
-        if (!procInited) 
+        if (!procInited)
         {
-            lastKProc = k; 
-            lastUProc = u; 
-            lastNow = now; 
+            lastKProc = k;
+            lastUProc = u;
+            lastNow = now;
             procInited = true;
         }
-        else 
+        else
         {
             const auto kDiff = k - lastKProc;
             const auto uDiff = u - lastUProc;
@@ -152,8 +170,8 @@ void CpuUsageMonitor::tick(double frameCpuMs)
             }
 
             procPct = std::clamp(pct, 0.0f, 100.0f);
-            lastKProc = k; 
-            lastUProc = u; 
+            lastKProc = k;
+            lastUProc = u;
             lastNow = now;
         }
     }
@@ -165,27 +183,35 @@ void CpuUsageMonitor::tick(double frameCpuMs)
 
 #include "imgui.h"
 
-void Perf::init(VkDevice device, uint32_t framesInFlight, double timestampPeriodNs) 
+/// \brief Inicializa el subsistema de rendimiento.
+/// \param device Dispositivo lógico Vulkan.
+/// \param framesInFlight Nº de frames en vuelo.
+/// \param timestampPeriodNs Periodo de timestamp del dispositivo.
+void Perf::init(VkDevice device, uint32_t framesInFlight, double timestampPeriodNs)
 {
     statsRef = PerfStats {};
     gpuTimer.init(device, framesInFlight, timestampPeriodNs);
     cpuMonitor.init();
 }
 
-void Perf::shutdown() 
+/// \brief Libera recursos asociados.
+void Perf::shutdown()
 {
     gpuTimer.destroy();
 }
 
-void Perf::beginCpuFrame() 
+/// \brief Marca el inicio del frame en CPU.
+void Perf::beginCpuFrame()
 {
     statsRef.cpuTick = std::chrono::high_resolution_clock::now();
 }
 
-void Perf::endCpuFrame() 
+/// \brief Marca el fin del frame en CPU y actualiza métricas instantáneas.
+void Perf::endCpuFrame()
 {
-    std::chrono::high_resolution_clock::time_point now = 
+    std::chrono::high_resolution_clock::time_point now =
         std::chrono::high_resolution_clock::now();
+
     double ms = std::chrono::duration<double, std::milli>(now - statsRef.cpuTick).count();
 
     statsRef.cpuFrameMs = ms;
@@ -196,7 +222,6 @@ void Perf::endCpuFrame()
     }
 
     statsRef.cpuFrameMsAvg = 0.9 * statsRef.cpuFrameMsAvg + 0.1 * ms;
-
     statsRef.fps = (ms > 0.0) ? (1000.0 / ms) : 0.0;
 
     if (statsRef.fpsAvg <= 0.0)
@@ -212,16 +237,21 @@ void Perf::endCpuFrame()
     uiAccumMs += ms;
 }
 
-void Perf::recordGpu(VkCommandBuffer cb, uint32_t frameIndex) 
+/// \brief Inserta consultas GPU en el \c commandBuffer del frame.
+/// \param cb Command buffer actual.
+/// \param frameIndex Índice de frame en vuelo.
+void Perf::recordGpu(VkCommandBuffer cb, uint32_t frameIndex)
 {
     gpuTimer.record(cb, frameIndex);
 }
 
-void Perf::resolveGpu(uint32_t frameIndex) 
+/// \brief Resuelve las consultas GPU del frame y actualiza medias/históricos.
+/// \param frameIndex Índice de frame en vuelo.
+void Perf::resolveGpu(uint32_t frameIndex)
 {
     double gpuMs = 0.0;
 
-    if (gpuTimer.resolve(frameIndex, gpuMs)) 
+    if (gpuTimer.resolve(frameIndex, gpuMs))
     {
         statsRef.gpuFrameMs = gpuMs;
 
@@ -231,17 +261,19 @@ void Perf::resolveGpu(uint32_t frameIndex)
         }
 
         statsRef.gpuFrameMsAvg = 0.9 * statsRef.gpuFrameMsAvg + 0.1 * gpuMs;
+
         statsRef.gpuMsHistory.push(static_cast<float>(gpuMs));
     }
 }
 
-void Perf::tickMonitors() 
+/// \brief Actualiza monitores según periodo de muestreo.
+void Perf::tickMonitors()
 {
     cpuMonitor.tick(statsRef.cpuFrameMs);
     statsRef.cpuUsageSystem = cpuMonitor.systemPercent();
     statsRef.cpuUsageProcess = cpuMonitor.processPercent();
 
-    if (uiAccumMs >= static_cast<double>(uiPeriodMs)) 
+    if (uiAccumMs >= static_cast<double>(uiPeriodMs))
     {
         uiAccumMs = 0.0;
 
@@ -256,8 +288,11 @@ void Perf::tickMonitors()
     }
 }
 
-void Perf::drawImGui(bool* pOpen) {
-    if (ImGui::Begin("Performance", pOpen, ImGuiWindowFlags_AlwaysAutoResize)) 
+/// \brief Dibuja el panel de rendimiento en ImGui.
+/// \param pOpen Puntero opcional a flag de visibilidad del panel.
+void Perf::drawImGui(bool* pOpen)
+{
+    if (ImGui::Begin("Performance", pOpen, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::Text("FPS: %.0f  (avg %.0f)", dispFps, dispFpsAvg);
         ImGui::Text("CPU frame: %.2f ms   (avg %.2f ms)", dispCpuMs, dispCpuMsAvg);
@@ -265,12 +300,27 @@ void Perf::drawImGui(bool* pOpen) {
         ImGui::Text("CPU usage: system %.1f%%   process %.1f%%", dispCpuSys, dispCpuProc);
 
         ImGui::Separator();
-        ImGui::PlotLines("FPS", statsRef.fpsHistory.raw(), statsRef.fpsHistory.size(),
-            statsRef.fpsHistory.size() - 1, nullptr, 0.0f, 240.0f, ImVec2(300, 80));
-        ImGui::PlotLines("CPU ms", statsRef.cpuMsHistory.raw(), statsRef.cpuMsHistory.size(),
-            statsRef.cpuMsHistory.size() - 1, nullptr, 0.0f, 33.0f, ImVec2(300, 80));
-        ImGui::PlotLines("GPU ms", statsRef.gpuMsHistory.raw(), statsRef.gpuMsHistory.size(),
-            statsRef.gpuMsHistory.size() - 1, nullptr, 0.0f, 33.0f, ImVec2(300, 80));
+        ImGui::PlotLines("FPS",
+            statsRef.fpsHistory.raw(),
+            statsRef.fpsHistory.size(),
+            statsRef.fpsHistory.size() - 1,
+            nullptr,
+            0.0f, 240.0f,
+            ImVec2(300, 80));
+        ImGui::PlotLines("CPU ms",
+            statsRef.cpuMsHistory.raw(),
+            statsRef.cpuMsHistory.size(),
+            statsRef.cpuMsHistory.size() - 1,
+            nullptr,
+            0.0f, 33.0f,
+            ImVec2(300, 80));
+        ImGui::PlotLines("GPU ms",
+            statsRef.gpuMsHistory.raw(),
+            statsRef.gpuMsHistory.size(),
+            statsRef.gpuMsHistory.size() - 1,
+            nullptr,
+            0.0f, 33.0f,
+            ImVec2(300, 80));
 
         ImGui::Separator();
         ImGui::TextDisabled("UI refresh: %d ms (suavizado EMA 0.1).", uiPeriodMs);

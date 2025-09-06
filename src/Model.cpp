@@ -13,37 +13,24 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-/**
- * @brief Combines multiple hash values into a single seed using Boost's hash_combine logic.
- *
- * This function uses a fold expression (C++17) to efficiently combine a variadic list of values
- * into a single hash value. It is typically used to create `std::hash` specializations for
- * composite types (e.g., structs with multiple fields).
- *
- * The mixing formula used is derived from Boost's `hash_combine`, which uses a constant
- * derived from the golden ratio (0x9e3779b9) to minimize collisions and distribute hash values
- * more uniformly.
- *
- * Reference:
- * https://www.boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine
- *
- * @tparam T First type to hash.
- * @tparam Rest Remaining types.
- * @param seed Reference to the accumulated hash seed.
- * @param v First value to combine.
- * @param rest Remaining values to combine.
- */
+ /// \brief Combina múltiples valores de hash en una sola semilla.
+ /// \details Utiliza una mezcla inspirada en hash_combine de Boost para reducir colisiones
+ /// y distribuir mejor los valores. Útil para especializaciones de std::hash
+ /// de tipos compuestos como \c Model::Vertex.
 template <typename T, typename... Rest>
 inline void hashCombine(std::size_t& seed, const T& v, const Rest&... rest)
 {
-    seed ^= std::hash<T> {}(v)+0x9e3779b9 + (seed << 6) + (seed >> 2);
-    ((seed ^= std::hash<Rest> {} (rest)+0x9e3779b9 + (seed << 6) + (seed >> 2)), ...);
+    seed ^= std::hash<T>{}(v)+0x9e3779b9 + (seed << 6) + (seed >> 2);
+    ((seed ^= std::hash<Rest>{}(rest)+0x9e3779b9 + (seed << 6) + (seed >> 2)), ...);
 }
 
+/// \brief Especialización de hash para \c Model::Vertex.
+/// \details Permite usar \c Model::Vertex como clave en contenedores hash
+/// como \c std::unordered_map mientras se construyen índices únicos.
 template <>
-struct std::hash<Model::Vertex> 
+struct std::hash<Model::Vertex>
 {
-    size_t operator()(Model::Vertex const& vertex) const 
+    size_t operator()(Model::Vertex const& vertex) const
     {
         size_t seed = 0;
         hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
@@ -52,34 +39,41 @@ struct std::hash<Model::Vertex>
     }
 };
 
+/// \brief Crea la malla en GPU a partir de los datos del \c Builder.
+/// \param device Dispositivo lógico Vulkan.
+/// \param builder Datos de vértices/índices ya cargados en CPU.
 Model::Model(VulkanDevice& device, const Model::Builder& builder)
-    : device{device} 
+    : device {device}
 {
     createVertexBuffer(builder.vertices);
     createIndexBuffer(builder.indices);
 }
 
+/// \brief Libera los buffers de GPU asociados a la malla.
 Model::~Model() {}
 
-std::unique_ptr<Model> Model::fromFile(VulkanDevice& device, const std::string& filepath) 
+/// \brief Carga desde archivo y crea la malla directamente.
+/// \param device Dispositivo lógico Vulkan.
+/// \param filepath Ruta del fichero.
+/// \return \c unique_ptr a \c Model ya inicializado.
+std::unique_ptr<Model> Model::fromFile(VulkanDevice& device, const std::string& filepath)
 {
     Builder builder {};
     builder.loadFromFile("../" + filepath);
-
-    return (std::make_unique<Model>(device, builder));
+    return std::make_unique<Model>(device, builder);
 }
 
-void Model::createVertexBuffer(const std::vector<Vertex>& vertices) 
+/// \brief Crea el \c VkBuffer de vértices y transfiere los datos desde CPU.
+/// \param vertices Vector de vértices.
+void Model::createVertexBuffer(const std::vector<Vertex>& vertices)
 {
     vertexCount = static_cast<uint32_t>(vertices.size());
-
     assert(vertexCount >= 3 && "💥[Vulkan API] Vertex count must be at least 3.");
 
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
     uint32_t vertexSize = sizeof(vertices[0]);
 
-    VulkanBuffer stagingBuffer
-    {
+    VulkanBuffer stagingBuffer{
         device,
         vertexSize,
         vertexCount,
@@ -87,7 +81,7 @@ void Model::createVertexBuffer(const std::vector<Vertex>& vertices)
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
 
     stagingBuffer.map();
-    stagingBuffer.writeToBuffer((void*) vertices.data());
+    stagingBuffer.writeToBuffer((void*)vertices.data());
 
     vertexBuffer = std::make_unique<VulkanBuffer>(
         device,
@@ -99,7 +93,9 @@ void Model::createVertexBuffer(const std::vector<Vertex>& vertices)
     device.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 }
 
-void Model::createIndexBuffer(const std::vector<uint32_t>& indices) 
+/// \brief Crea el \c VkBuffer de índices y transfiere los datos desde CPU.
+/// \param indices Vector de índices (triángulos).
+void Model::createIndexBuffer(const std::vector<uint32_t>& indices)
 {
     indexCount = static_cast<uint32_t>(indices.size());
     useIndexBuffer = indexCount > 0;
@@ -112,8 +108,7 @@ void Model::createIndexBuffer(const std::vector<uint32_t>& indices)
     VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
     uint32_t indexSize = sizeof(indices[0]);
 
-    VulkanBuffer stagingBuffer
-    {
+    VulkanBuffer stagingBuffer{
         device,
         indexSize,
         indexCount,
@@ -133,66 +128,73 @@ void Model::createIndexBuffer(const std::vector<uint32_t>& indices)
     device.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
 }
 
-void Model::draw(VkCommandBuffer commandBuffer) 
-{
-    if (useIndexBuffer) 
-    {
-        vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
-    }
-    else 
-    {
-        vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
-    }
-}
-
-void Model::bind(VkCommandBuffer commandBuffer) 
+/// \brief Enlaza los vertex/index buffers al \c commandBuffer.
+/// \param commandBuffer Command buffer en el que se están grabando comandos.
+void Model::bind(VkCommandBuffer commandBuffer)
 {
     VkBuffer buffers[] = {vertexBuffer->getBuffer()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
-    if (useIndexBuffer) 
+    if (useIndexBuffer)
     {
         vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
     }
 }
 
-std::vector<VkVertexInputBindingDescription> Model::Vertex::bindingDescriptions() 
+/// \brief Emite la orden de dibujo (indexed o no) sobre el \c commandBuffer.
+/// \param commandBuffer Command buffer en el que se están grabando comandos.
+void Model::draw(VkCommandBuffer commandBuffer)
+{
+    if (useIndexBuffer)
+    {
+        vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
+    }
+    else
+    {
+        vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+    }
+}
+
+/// \brief Descriptores de binding para el pipeline.
+/// \return Vector con la única entrada de binding usada por este formato.
+std::vector<VkVertexInputBindingDescription> Model::Vertex::bindingDescriptions()
 {
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
     bindingDescriptions[0].binding = 0;
     bindingDescriptions[0].stride = sizeof(Vertex);
     bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    return (bindingDescriptions);
+    return bindingDescriptions;
 }
 
-std::vector<VkVertexInputAttributeDescription> Model::Vertex::attributeDescriptions() 
+/// \brief Descriptores de atributos para el pipeline.
+/// \return Vector con las descripciones de posición, color, normal y UV.
+std::vector<VkVertexInputAttributeDescription> Model::Vertex::attributeDescriptions()
 {
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
     attributeDescriptions.push_back(
-        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
-
+        { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position) });
     attributeDescriptions.push_back(
-        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
-
+        { 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color) });
     attributeDescriptions.push_back(
-        {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
-
+        { 2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
     attributeDescriptions.push_back(
-        {3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
-
-    return (attributeDescriptions);
+        { 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
+    return attributeDescriptions;
 }
 
-void Model::Builder::loadFromFile(const std::string& filepath) 
+/// \brief Carga la malla desde un fichero en disco.
+/// \param filepath Ruta del fichero.
+/// \post \c vertices y \c indices quedan poblados.
+void Model::Builder::loadFromFile(const std::string& filepath)
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())) 
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
     {
         throw std::runtime_error(warn + err);
     }
@@ -202,49 +204,49 @@ void Model::Builder::loadFromFile(const std::string& filepath)
 
     std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
-    for (const tinyobj::shape_t& shape : shapes) 
+    for (const tinyobj::shape_t& shape : shapes)
     {
-        for (const tinyobj::index_t& index : shape.mesh.indices) 
+        for (const tinyobj::index_t& index : shape.mesh.indices)
         {
-            Vertex vertex {};
+            Vertex vertex{};
 
-            if (index.vertex_index >= 0) 
+            if (index.vertex_index >= 0)
             {
-                vertex.position = 
+                vertex.position =
                 {
                     attrib.vertices[3 * index.vertex_index + 0],
                     attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2] 
+                    attrib.vertices[3 * index.vertex_index + 2]
                 };
 
-                vertex.color = 
+                vertex.color =
                 {
                     attrib.colors[3 * index.vertex_index + 0],
                     attrib.colors[3 * index.vertex_index + 1],
-                    attrib.colors[3 * index.vertex_index + 2] 
+                    attrib.colors[3 * index.vertex_index + 2]
                 };
             }
 
-            if (index.normal_index >= 0) 
+            if (index.normal_index >= 0)
             {
-                vertex.normal = 
+                vertex.normal =
                 {
                     attrib.normals[3 * index.normal_index + 0],
                     attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2] 
+                    attrib.normals[3 * index.normal_index + 2]
                 };
             }
 
-            if (index.texcoord_index >= 0) 
+            if (index.texcoord_index >= 0)
             {
-                vertex.uv = 
+                vertex.uv =
                 {
                     attrib.texcoords[2 * index.texcoord_index + 0],
-                    attrib.texcoords[2 * index.texcoord_index + 1] 
+                    attrib.texcoords[2 * index.texcoord_index + 1]
                 };
             }
 
-            if (uniqueVertices.count(vertex) == 0) 
+            if (uniqueVertices.count(vertex) == 0)
             {
                 uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
                 vertices.push_back(vertex);
@@ -254,3 +256,4 @@ void Model::Builder::loadFromFile(const std::string& filepath)
         }
     }
 }
+

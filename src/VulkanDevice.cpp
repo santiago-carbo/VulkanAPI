@@ -12,7 +12,9 @@
 #include <unordered_set>
 #include <set>
 
-
+ /// \brief Callback de validación de Vulkan (Debug Utils).
+ /// \details Recibe los mensajes del validador de Vulkan y los escribe en stderr.
+ /// Devuelve \c VK_FALSE para indicar que la llamada no debe interrumpir la ejecución.
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -24,6 +26,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     return (VK_FALSE);
 }
 
+/// \brief Crea el mensajero de depuración (Debug Utils Messenger) en tiempo de ejecución.
+/// \details Carga la función de creación mediante \c vkGetInstanceProcAddr para no
+/// depender estáticamente de la extensión. Si está disponible, crea el mensajero.
 VkResult createDebugUtilsMessengerEXT(
     VkInstance instance,
     const VkDebugUtilsMessengerCreateInfoEXT* createInfo,
@@ -42,6 +47,9 @@ VkResult createDebugUtilsMessengerEXT(
     return (VK_ERROR_EXTENSION_NOT_PRESENT);
 }
 
+/// \brief Destruye el mensajero de depuración (Debug Utils Messenger).
+/// \details Carga la función de destrucción mediante \c vkGetInstanceProcAddr.
+/// Si la función existe, destruye el recurso asociado al mensajero.
 void destroyDebugUtilsMessengerEXT(
     VkInstance instance,
     VkDebugUtilsMessengerEXT debugMessenger,
@@ -57,6 +65,8 @@ void destroyDebugUtilsMessengerEXT(
     }
 }
 
+/// \brief Construye el dispositivo asociado a una ventana y crea los recursos base.
+/// \param window Referencia a la ventana usada para crear la surface.
 VulkanDevice::VulkanDevice(Window& window) 
     : window(window) 
 {
@@ -68,6 +78,7 @@ VulkanDevice::VulkanDevice(Window& window)
     createCommandPool();
 }
 
+/// \brief Libera recursos del dispositivo y objetos dependientes.
 VulkanDevice::~VulkanDevice() 
 {
     vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
@@ -82,6 +93,7 @@ VulkanDevice::~VulkanDevice()
     vkDestroyInstance(instance, nullptr);
 }
 
+/// \brief Crea la instancia de Vulkan con las extensiones y capas requeridas.
 void VulkanDevice::createInstance() 
 {
     if (enableValidationLayers && !checkValidationLayerSupport()) 
@@ -129,6 +141,34 @@ void VulkanDevice::createInstance()
     verifyGLFWRequiredExtensions();
 }
 
+/// \brief Inicializa el mensajero de depuración si está habilitado.
+void VulkanDevice::setupDebugMessenger()
+{
+    if (!enableValidationLayers)
+    {
+        return;
+    }
+
+    VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+    populateDebugMessengerInfo(createInfo);
+
+    if (createDebugUtilsMessengerEXT(
+        instance,
+        &createInfo,
+        nullptr,
+        &debugMessenger) != VK_SUCCESS)
+    {
+        throw std::runtime_error("💥[Vulkan API] Failed to set up debug messenger.");
+    }
+}
+
+/// \brief Crea la surface asociada a la ventana.
+void VulkanDevice::createSurface()
+{
+    window.createWindowSurface(instance, &surface);
+}
+
+/// \brief Selecciona el dispositivo físico adecuado.
 void VulkanDevice::selectPhysicalDevice() 
 {
     uint32_t deviceCount = 0;
@@ -160,6 +200,7 @@ void VulkanDevice::selectPhysicalDevice()
     std::cout << "[Vulkan API] Selected GPU: " << deviceProperties.deviceName << std::endl;
 }
 
+/// \brief Crea el dispositivo lógico y obtiene colas de gráficos y presentación.
 void VulkanDevice::createLogicalDevice() 
 {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
@@ -209,6 +250,7 @@ void VulkanDevice::createLogicalDevice()
     vkGetDeviceQueue(logicalDevice, indices.presentFamily, 0, &presentQueue);
 }
 
+/// \brief Crea el command pool principal.
 void VulkanDevice::createCommandPool() 
 {
     QueueFamilyIndices indices = getQueueFamilyIndices();
@@ -225,11 +267,9 @@ void VulkanDevice::createCommandPool()
     }
 }
 
-void VulkanDevice::createSurface() 
-{
-    window.createWindowSurface(instance, &surface);
-}
-
+/// \brief Verifica si un dispositivo físico cumple los requisitos.
+/// \param device Dispositivo físico candidato.
+/// \return Verdadero si cumple.
 bool VulkanDevice::isDeviceSuitable(VkPhysicalDevice device) const 
 {
     QueueFamilyIndices indices = findQueueFamilies(device);
@@ -253,6 +293,96 @@ bool VulkanDevice::isDeviceSuitable(VkPhysicalDevice device) const
         supportedFeatures.samplerAnisotropy);
 }
 
+/// \brief Extensiones requeridas por la plataforma.
+std::vector<const char*> VulkanDevice::getRequiredExtensions() const
+{
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+    if (enableValidationLayers)
+    {
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    return (extensions);
+}
+
+/// \brief Comprueba si los validation layers solicitados están disponibles.
+bool VulkanDevice::checkValidationLayerSupport() const
+{
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const char* layerName : validationLayers)
+    {
+        bool layerFound = false;
+
+        for (const VkLayerProperties& layerProperties : availableLayers)
+        {
+            if (strcmp(layerName, layerProperties.layerName) == 0)
+            {
+                layerFound = true;
+                break;
+            }
+        }
+
+        if (!layerFound)
+        {
+            return (false);
+        }
+    }
+
+    return (true);
+}
+
+/// \brief Busca familias de colas necesarias en un dispositivo físico.
+/// \param device Dispositivo físico candidato.
+/// \return Estructura con los índices localizados.
+QueueFamilyIndices VulkanDevice::findQueueFamilies(VkPhysicalDevice device) const
+{
+    QueueFamilyIndices indices;
+
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+    for (uint32_t i = 0; i < queueFamilies.size(); ++i)
+    {
+        const VkQueueFamilyProperties& queueFamily = queueFamilies[i];
+
+        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
+            indices.graphicsFamily = i;
+            indices.hasGraphicsFamily = true;
+        }
+
+        VkBool32 presentSupport = VK_FALSE;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+
+        if (queueFamily.queueCount > 0 && presentSupport)
+        {
+            indices.presentFamily = i;
+            indices.hasPresentFamily = true;
+        }
+
+        if (indices.isComplete())
+        {
+            break;
+        }
+    }
+
+    return (indices);
+}
+
+/// \brief Rellena la estructura de creación del mensajero de depuración.
+/// \param createInfo Estructura a completar.
 void VulkanDevice::populateDebugMessengerInfo(
     VkDebugUtilsMessengerCreateInfoEXT& createInfo) const
 {
@@ -269,72 +399,7 @@ void VulkanDevice::populateDebugMessengerInfo(
     createInfo.pUserData = nullptr;
 }
 
-void VulkanDevice::setupDebugMessenger() 
-{
-    if (!enableValidationLayers)
-    {
-        return;
-    }
-
-    VkDebugUtilsMessengerCreateInfoEXT createInfo {};
-    populateDebugMessengerInfo(createInfo);
-
-    if (createDebugUtilsMessengerEXT(
-        instance, 
-        &createInfo, 
-        nullptr, 
-        &debugMessenger) != VK_SUCCESS) 
-    {
-        throw std::runtime_error("💥[Vulkan API] Failed to set up debug messenger.");
-    }
-}
-
-bool VulkanDevice::checkValidationLayerSupport() const 
-{
-    uint32_t layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-    for (const char* layerName : validationLayers) 
-    {
-        bool layerFound = false;
-
-        for (const VkLayerProperties& layerProperties : availableLayers) 
-        {
-            if (strcmp(layerName, layerProperties.layerName) == 0) 
-            {
-                layerFound = true;
-                break;
-            }
-        }
-
-        if (!layerFound) 
-        {
-            return (false);
-        }
-    }
-
-    return (true);
-}
-
-
-std::vector<const char*> VulkanDevice::getRequiredExtensions() const 
-{
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-    if (enableValidationLayers) 
-    {
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-
-    return (extensions);
-}
-
+/// \brief Verifica que las extensiones requeridas por GLFW están disponibles.
 void VulkanDevice::verifyGLFWRequiredExtensions() const
 {
     uint32_t extensionCount = 0;
@@ -363,6 +428,9 @@ void VulkanDevice::verifyGLFWRequiredExtensions() const
     }
 }
 
+/// \brief Comprueba soporte de extensiones de dispositivo.
+/// \param device Dispositivo físico candidato.
+/// \return Verdadero si se soportan.
 bool VulkanDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) const 
 {
     uint32_t extensionCount;
@@ -385,44 +453,9 @@ bool VulkanDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) const
     return (requiredExtensions.empty());
 }
 
-QueueFamilyIndices VulkanDevice::findQueueFamilies(VkPhysicalDevice device) const 
-{
-    QueueFamilyIndices indices;
-
-    uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-    for (uint32_t i = 0; i < queueFamilies.size(); ++i) 
-    {
-        const VkQueueFamilyProperties& queueFamily = queueFamilies[i];
-
-        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
-        {
-            indices.graphicsFamily = i;
-            indices.hasGraphicsFamily = true;
-        }
-
-        VkBool32 presentSupport = VK_FALSE;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
-        if (queueFamily.queueCount > 0 && presentSupport) 
-        {
-            indices.presentFamily = i;
-            indices.hasPresentFamily = true;
-        }
-
-        if (indices.isComplete()) 
-        {
-            break;
-        }
-    }
-
-    return (indices);
-}
-
+/// \brief Consulta soporte de swapchain para un dispositivo físico.
+/// \param device Dispositivo físico a consultar.
+/// \return Detalles de capacidades, formatos y modos.
 SwapChainSupportDetails VulkanDevice::querySwapChainSupport(VkPhysicalDevice device) const 
 {
     SwapChainSupportDetails details;
@@ -458,6 +491,34 @@ SwapChainSupportDetails VulkanDevice::querySwapChainSupport(VkPhysicalDevice dev
     return (details);
 }
 
+/// \brief Busca un tipo de memoria de dispositivo que cumpla las propiedades requeridas.
+/// \param typeFilter Máscara de tipos aceptables.
+/// \param properties Propiedades de memoria requeridas.
+/// \return Índice de tipo de memoria válido.
+uint32_t VulkanDevice::findMemoryType(
+    uint32_t typeFilter,
+    VkMemoryPropertyFlags properties) const
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; ++i)
+    {
+        if ((typeFilter & (1 << i)) &&
+            (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return (i);
+        }
+    }
+
+    throw std::runtime_error("💥[Vulkan API] Failed to find suitable memory type.");
+}
+
+/// \brief Elige un formato soportado a partir de candidatos y características requeridas.
+/// \param candidates Lista de formatos candidatos.
+/// \param tiling Tipeado de imagen requerido.
+/// \param features Conjunto de características requeridas.
+/// \return Formato compatible.
 VkFormat VulkanDevice::findSupportedFormat(
     const std::vector<VkFormat>& candidates,
     VkImageTiling tiling,
@@ -484,26 +545,12 @@ VkFormat VulkanDevice::findSupportedFormat(
     throw std::runtime_error("💥[Vulkan API] Failed to find supported format.");
 }
 
-
-uint32_t VulkanDevice::findMemoryType(
-    uint32_t typeFilter, 
-    VkMemoryPropertyFlags properties) const 
-{
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; ++i) 
-    {
-        if ((typeFilter & (1 << i)) &&
-            (memProperties.memoryTypes[i].propertyFlags & properties) == properties) 
-        {
-            return (i);
-        }
-    }
-
-    throw std::runtime_error("💥[Vulkan API] Failed to find suitable memory type.");
-}
-
+/// \brief Crea un VkBuffer y asigna su memoria en el dispositivo.
+/// \param size Tamaño del búfer.
+/// \param usage Flags de uso del búfer.
+/// \param properties Propiedades de la memoria requerida.
+/// \param buffer Salida con el manejador del búfer.
+/// \param bufferMemory Salida con la memoria asignada.
 void VulkanDevice::createBuffer(
     VkDeviceSize size,
     VkBufferUsageFlags usage,
@@ -539,6 +586,8 @@ void VulkanDevice::createBuffer(
     vkBindBufferMemory(logicalDevice, buffer, bufferMemory, 0);
 }
 
+/// \brief Comienza un comando de un solo uso en un command buffer temporal.
+/// \return Command buffer listo para grabar.
 VkCommandBuffer VulkanDevice::beginSingleUseCommands() 
 {
     VkCommandBufferAllocateInfo allocInfo {};
@@ -558,6 +607,8 @@ VkCommandBuffer VulkanDevice::beginSingleUseCommands()
     return (commandBuffer);
 }
 
+/// \brief Finaliza y envía el command buffer de un solo uso y libera recursos.
+/// \param commandBuffer El command buffer temporal a finalizar.
 void VulkanDevice::endSingleUseCommands(VkCommandBuffer commandBuffer) {
     vkEndCommandBuffer(commandBuffer);
 
@@ -572,6 +623,10 @@ void VulkanDevice::endSingleUseCommands(VkCommandBuffer commandBuffer) {
     vkFreeCommandBuffers(logicalDevice, commandPool, 1, &commandBuffer);
 }
 
+/// \brief Copia datos entre búferes con un comando inmediato.
+/// \param srcBuffer Origen.
+/// \param dstBuffer Destino.
+/// \param size Tamaño de la copia.
 void VulkanDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) 
 {
     VkCommandBuffer commandBuffer = beginSingleUseCommands();
@@ -583,6 +638,12 @@ void VulkanDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSi
     endSingleUseCommands(commandBuffer);
 }
 
+/// \brief Copia datos desde un búfer a una imagen.
+/// \param buffer Búfer origen.
+/// \param image Imagen destino.
+/// \param width Anchura de la región a copiar.
+/// \param height Altura de la región a copiar.
+/// \param layerCount Número de capas de la imagen a copiar.
 void VulkanDevice::copyBufferToImage(
     VkBuffer buffer, 
     VkImage image, 
@@ -616,6 +677,11 @@ void VulkanDevice::copyBufferToImage(
     endSingleUseCommands(commandBuffer);
 }
 
+/// \brief Crea una imagen con los parámetros indicados y asigna su memoria.
+/// \param imageInfo Estructura de creación de imagen.
+/// \param properties Propiedades de la memoria requerida.
+/// \param image Salida con la imagen creada.
+/// \param imageMemory Salida con la memoria asignada.
 void VulkanDevice::createImageWithInfo(
     const VkImageCreateInfo& imageInfo,
     VkMemoryPropertyFlags properties,

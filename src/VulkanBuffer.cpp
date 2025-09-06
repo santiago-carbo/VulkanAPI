@@ -16,13 +16,12 @@
 #include <cassert>
 #include <cstring>
 
- /**
-  * Calculates the aligned size for an instance given a required minimum alignment.
-  *
-  * @param instanceSize Size of a single instance in bytes.
-  * @param minOffsetAlignment Required minimum alignment in bytes.
-  * @return Aligned size that satisfies the given alignment constraint.
-  */
+ /// \brief Calcula el tamaño alineado por instancia.
+ /// \details Si \c minOffsetAlignment es mayor que cero, redondea \c instanceSize
+ /// al múltiplo más cercano requerido por el dispositivo.
+ /// \param instanceSize Tamaño base de la instancia.
+ /// \param minOffsetAlignment Alineación mínima exigida por el dispositivo.
+ /// \return Tamaño alineado por instancia.
 VkDeviceSize VulkanBuffer::getAlignment(
     VkDeviceSize instanceSize,
     VkDeviceSize minOffsetAlignment)
@@ -35,6 +34,15 @@ VkDeviceSize VulkanBuffer::getAlignment(
     return (instanceSize);
 }
 
+/// \brief Crea un búfer y reserva su memoria en el dispositivo.
+/// \details Configura tamaño total en función de \c instanceSize , \c instanceCount
+/// y la alineación mínima requerida. No mapea la memoria de forma automática.
+/// \param device Dispositivo lógico Vulkan.
+/// \param instanceSize Tamaño de una instancia lógica almacenada en el búfer.
+/// \param instanceCount Número de instancias almacenadas consecutivamente.
+/// \param usageFlags Uso del búfer (por ejemplo \c VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT).
+/// \param memoryPropertyFlags Propiedades de la memoria (por ejemplo \c HOST_VISIBLE).
+/// \param minOffsetAlignment Alineación mínima por instancia. Use 1 si no aplica.
 VulkanBuffer::VulkanBuffer(
     VulkanDevice& device,
     VkDeviceSize instanceSize,
@@ -53,6 +61,7 @@ VulkanBuffer::VulkanBuffer(
     device.createBuffer(bufferSize, usageFlags, memoryPropertyFlags, buffer, memory);
 }
 
+/// \brief Libera el búfer y su memoria.
 VulkanBuffer::~VulkanBuffer()
 {
     unmap();
@@ -60,15 +69,11 @@ VulkanBuffer::~VulkanBuffer()
     vkFreeMemory(vulkanDevice.getDevice(), memory, nullptr);
 }
 
-/**
- * Map a memory range of this buffer. If successful, mapped points to the specified buffer range.
- *
- * @param size (Optional) Size of the memory range to map. Pass VK_WHOLE_SIZE to map the complete
- * buffer range.
- * @param offset (Optional) Byte offset from beginning
- *
- * @return VkResult of the buffer mapping call
- */
+/// \brief Mapea la memoria del búfer para acceso CPU.
+/// \details Si \c size es \c VK_WHOLE_SIZE se mapea el rango completo.
+/// \param size Tamaño a mapear en bytes.
+/// \param offset Desplazamiento inicial del mapeo.
+/// \return Resultado Vulkan de la operación de mapeo.
 VkResult VulkanBuffer::map(VkDeviceSize size, VkDeviceSize offset)
 {
     assert(buffer && memory && "💥[Vulkan API] Called map on buffer before create.");
@@ -76,11 +81,7 @@ VkResult VulkanBuffer::map(VkDeviceSize size, VkDeviceSize offset)
     return (vkMapMemory(vulkanDevice.getDevice(), memory, offset, size, 0, &mapped));
 }
 
-/**
- * Unmap a mapped memory range
- *
- * @note Does not return a result as vkUnmapMemory can't fail
- */
+/// \brief Desmapea la memoria previamente mapeada.
 void VulkanBuffer::unmap()
 {
     if (mapped)
@@ -90,15 +91,11 @@ void VulkanBuffer::unmap()
     }
 }
 
-/**
- * Copies the specified data to the mapped buffer. Default value writes whole buffer range
- *
- * @param data Pointer to the data to copy
- * @param size (Optional) Size of the data to copy. Pass VK_WHOLE_SIZE to flush the complete buffer
- * range.
- * @param offset (Optional) Byte offset from beginning of mapped region
- *
- */
+/// \brief Copia datos desde CPU al rango mapeado del búfer.
+/// \details Requiere el búfer mapeado. No realiza \c vkFlushMappedMemoryRanges.
+/// \param data Puntero al bloque de memoria origen.
+/// \param size Tamaño a escribir. Use \c VK_WHOLE_SIZE para el total.
+/// \param offset Desplazamiento dentro del búfer de destino.
 void VulkanBuffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset)
 {
     assert(mapped && "💥[Vulkan API] Cannot copy to unmapped buffer.");
@@ -115,17 +112,11 @@ void VulkanBuffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize off
     }
 }
 
-/**
- * Flush a memory range of the buffer to make it visible to the device
- *
- * @note Only required for non-coherent memory
- *
- * @param size (Optional) Size of the memory range to flush. Pass VK_WHOLE_SIZE to flush the
- * complete buffer range.
- * @param offset (Optional) Byte offset from beginning
- *
- * @return VkResult of the flush call
- */
+/// \brief Sincroniza escrituras de host hacia la GPU.
+/// \details Necesario para memorias no coherentes. Para coherentes no es obligatorio.
+/// \param size Tamaño del rango a sincronizar.
+/// \param offset Desplazamiento inicial del rango.
+/// \return Resultado Vulkan de la operación de \c flush.
 VkResult VulkanBuffer::flush(VkDeviceSize size, VkDeviceSize offset)
 {
     VkMappedMemoryRange mappedRange = {};
@@ -137,17 +128,11 @@ VkResult VulkanBuffer::flush(VkDeviceSize size, VkDeviceSize offset)
     return (vkFlushMappedMemoryRanges(vulkanDevice.getDevice(), 1, &mappedRange));
 }
 
-/**
- * Invalidate a memory range of the buffer to make it visible to the host
- *
- * @note Only required for non-coherent memory
- *
- * @param size (Optional) Size of the memory range to invalidate. Pass VK_WHOLE_SIZE to invalidate
- * the complete buffer range.
- * @param offset (Optional) Byte offset from beginning
- *
- * @return VkResult of the invalidate call
- */
+/// \brief Sincroniza lecturas de host desde la GPU.
+/// \details Necesario para memorias no coherentes antes de leer cambios desde CPU.
+/// \param size Tamaño del rango a invalidar.
+/// \param offset Desplazamiento inicial del rango.
+/// \return Resultado Vulkan de la operación de \c invalidate.
 VkResult VulkanBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset)
 {
     VkMappedMemoryRange mappedRange = {};
@@ -159,57 +144,44 @@ VkResult VulkanBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset)
     return (vkInvalidateMappedMemoryRanges(vulkanDevice.getDevice(), 1, &mappedRange));
 }
 
-/**
- * Generates a VkDescriptorBufferInfo object to describe this buffer for descriptor binding.
- *
- * @param size Size of the buffer region. Defaults to VK_WHOLE_SIZE.
- * @param offset Offset from the start of the buffer. Defaults to 0.
- * @return A filled VkDescriptorBufferInfo struct.
- */
+/// \brief Devuelve la información de descriptor para enlazar el búfer.
+/// \details Útil para \c VkWriteDescriptorSet con UBOs o SSBOs.
+/// \param size Tamaño del rango expuesto al shader.
+/// \param offset Desplazamiento del rango expuesto.
+/// \return Estructura \c VkDescriptorBufferInfo lista para usar.
 VkDescriptorBufferInfo VulkanBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset)
 {
     return (VkDescriptorBufferInfo{buffer, offset, size});
 }
 
-/**
- * Copies one instance (with size equal to instanceSize) into the mapped buffer at a given index.
- *
- * @param data Pointer to the data to copy.
- * @param index Target index to copy the data to.
- */
+/// \brief Escribe una instancia concreta en el búfer alineado.
+/// \details Calcula el desplazamiento como \c index * alignmentSize.
+/// \param data Puntero a los datos de la instancia.
+/// \param index Índice de instancia destino.
 void VulkanBuffer::writeToIndex(void* data, int index)
 {
     writeToBuffer(data, instanceSize, index * alignmentSize);
 }
 
-/**
- * Flushes the memory region associated with the specified index.
- *
- * @param index Index of the instance to flush.
- * @return VkResult of the flush call.
- */
+/// \brief Realiza \c flush del rango correspondiente a una instancia.
+/// \param index Índice de instancia.
+/// \return Resultado Vulkan de la operación.
 VkResult VulkanBuffer::flushIndex(int index)
 {
     return (flush(alignmentSize, index * alignmentSize));
 }
 
-/**
- * Returns a descriptor buffer info pointing to the memory region of a specific index.
- *
- * @param index Index of the instance.
- * @return A VkDescriptorBufferInfo struct for the selected instance.
- */
+/// \brief Devuelve \c VkDescriptorBufferInfo para una instancia concreta.
+/// \param index Índice de instancia.
+/// \return Descriptor limitado al subrango de la instancia.
 VkDescriptorBufferInfo VulkanBuffer::descriptorInfoForIndex(int index)
 {
     return (descriptorInfo(alignmentSize, index * alignmentSize));
 }
 
-/**
- * Invalidates the memory range of a specific index.
- *
- * @param index Index of the instance to invalidate.
- * @return VkResult of the invalidate call.
- */
+/// \brief Invalida el rango correspondiente a una instancia.
+/// \param index Índice de instancia.
+/// \return Resultado Vulkan de la operación.
 VkResult VulkanBuffer::invalidateIndex(int index)
 {
     return (invalidate(alignmentSize, index * alignmentSize));

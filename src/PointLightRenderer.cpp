@@ -11,6 +11,8 @@
 #include <map>
 #include <stdexcept>
 
+/// \brief Push constants de la luz puntual.
+/// \details Datos mínimos que el shader necesita por luz: posición, color y radio de influencia.
 struct PointLightPushConstants 
 {
     glm::vec4 position {};
@@ -18,6 +20,10 @@ struct PointLightPushConstants
     float radius;
 };
 
+/// \brief Construye el sistema de luces puntuales y crea los recursos de pipeline.
+/// \param device Dispositivo lógico Vulkan.
+/// \param renderPass Render pass donde se ejecutará esta tubería.
+/// \param globalSetLayout Layout de descriptores global compatible con shaders.
 PointLightSystem::PointLightSystem(
     VulkanDevice& device, 
     VkRenderPass renderPass, 
@@ -28,11 +34,14 @@ PointLightSystem::PointLightSystem(
     createPipeline(renderPass);
 }
 
+/// \brief Libera recursos asociados.
 PointLightSystem::~PointLightSystem() 
 {
     vkDestroyPipelineLayout(vulkanDevice.getDevice(), pipelineLayout, nullptr);
 }
 
+/// \brief Crea el \c VkPipelineLayout compatible con el \c globalSetLayout.
+/// \param globalSetLayout Layout de descriptores global que usan los shaders de luz.
 void PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) 
 {
     VkPushConstantRange pushConstantRange {};
@@ -59,6 +68,8 @@ void PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayou
     }
 }
 
+/// \brief Crea la \c GraphicsPipeline específica para el pass de luces puntuales.
+/// \param renderPass Render pass objetivo donde se ejecutará la tubería.
 void PointLightSystem::createPipeline(VkRenderPass renderPass) 
 {
     assert(pipelineLayout != nullptr && 
@@ -80,6 +91,11 @@ void PointLightSystem::createPipeline(VkRenderPass renderPass)
         pipelineConfig);
 }
 
+/// \brief Actualiza el bloque UBO global con las luces activas de la escena.
+/// \details Recorre \c frameInfo.gameObjects y compacta luces puntuales en \c ubo.pointLights,
+/// ajustando \c ubo.numLights y parámetros de iluminación global si procede.
+/// \param frameInfo Contexto del frame.
+/// \param ubo Estructura \c GlobalUbo a rellenar/actualizar antes del render.
 void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo) 
 {
     glm::mat4 rotateLight =
@@ -110,6 +126,10 @@ void PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
     ubo.numLights = lightIndex;
 }
 
+/// \brief Emite los comandos de dibujo de las luces puntuales.
+/// \details Enlaza pipeline, descriptor set global y registra las draw calls necesarias
+/// para representar las luces.
+/// \param frameInfo Contexto del frame con \c commandBuffer activo.
 void PointLightSystem::render(FrameInfo& frameInfo) 
 {
     std::map<float, unsigned int> sorted;

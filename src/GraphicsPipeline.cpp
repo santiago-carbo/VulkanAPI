@@ -11,16 +11,22 @@
 
 #include <fstream>
 
+ /// \brief Construye la tubería gráfica a partir de rutas de shaders y configuración.
+ /// \param device Dispositivo lógico Vulkan.
+ /// \param vertexPath Ruta del shader de vértices en SPIR-V (.spv).
+ /// \param fragmentPath Ruta del shader de fragmentos en SPIR-V (.spv).
+ /// \param config Estructura \c PipelineConfig completamente rellenada.
 GraphicsPipeline::GraphicsPipeline(
     VulkanDevice& device,
     const std::string& vertexPath,
     const std::string& fragmentPath,
     const PipelineConfig& config)
-    : device{device} 
+    : device{ device }
 {
     create(vertexPath, fragmentPath, config);
 }
 
+/// \brief Destruye la \c VkPipeline y los módulos de shader.
 GraphicsPipeline::~GraphicsPipeline()
 {
     vkDestroyShaderModule(device.getDevice(), vertexModule, nullptr);
@@ -28,12 +34,15 @@ GraphicsPipeline::~GraphicsPipeline()
     vkDestroyPipeline(device.getDevice(), pipeline, nullptr);
 }
 
-std::vector<char> GraphicsPipeline::readFile(const std::string& path) 
+/// \brief Carga un archivo binario (SPIR-V) a memoria.
+/// \param path Ruta del archivo.
+/// \return Vector de bytes con el contenido del fichero.
+std::vector<char> GraphicsPipeline::readFile(const std::string& path)
 {
     std::string fullPath = "../" + path;
-    std::ifstream file{fullPath, std::ios::ate | std::ios::binary};
+    std::ifstream file{ fullPath, std::ios::ate | std::ios::binary };
 
-    if (!file.is_open()) 
+    if (!file.is_open())
     {
         throw std::runtime_error("💥[Vulkan API] Failed to open file: " + fullPath + ".");
     }
@@ -48,12 +57,15 @@ std::vector<char> GraphicsPipeline::readFile(const std::string& path)
     return (buffer);
 }
 
+/// \brief Crea la \c VkPipeline con los módulos de shader y el \c PipelineConfig.
+/// \param vertexPath Ruta del shader de vértices.
+/// \param fragmentPath Ruta del shader de fragmentos.
+/// \param config Configuración completa del pipeline.
 void GraphicsPipeline::create(
     const std::string& vertexPath,
     const std::string& fragmentPath,
-    const PipelineConfig& config) 
+    const PipelineConfig& config)
 {
-
     assert(config.layout != VK_NULL_HANDLE && "💥[Vulkan API] No pipeline layout provided.");
     assert(config.renderPass != VK_NULL_HANDLE && "💥[Vulkan API] No render pass provided.");
 
@@ -63,7 +75,7 @@ void GraphicsPipeline::create(
     createShader(vertexCode, &vertexModule);
     createShader(fragmentCode, &fragmentModule);
 
-    VkPipelineShaderStageCreateInfo shaderStages[2] {};
+    VkPipelineShaderStageCreateInfo shaderStages[2]{};
     shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
     shaderStages[0].module = vertexModule;
@@ -76,18 +88,14 @@ void GraphicsPipeline::create(
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-    vertexInputInfo.vertexBindingDescriptionCount = 
+    vertexInputInfo.vertexBindingDescriptionCount =
         static_cast<uint32_t>(config.bindings.size());
-
     vertexInputInfo.pVertexBindingDescriptions = config.bindings.data();
-
-    vertexInputInfo.vertexAttributeDescriptionCount = 
+    vertexInputInfo.vertexAttributeDescriptionCount =
         static_cast<uint32_t>(config.attributes.size());
-
     vertexInputInfo.pVertexAttributeDescriptions = config.attributes.data();
 
-    VkGraphicsPipelineCreateInfo pipelineInfo {};
+    VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
     pipelineInfo.pStages = shaderStages;
@@ -111,15 +119,18 @@ void GraphicsPipeline::create(
         1,
         &pipelineInfo,
         nullptr,
-        &pipeline) != VK_SUCCESS) 
+        &pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("💥[Vulkan API] Failed to create graphics pipeline.");
     }
 }
 
-void GraphicsPipeline::createShader(const std::vector<char>& code, VkShaderModule* module) 
+/// \brief Crea un \c VkShaderModule desde el código SPIR-V dado.
+/// \param code Bytecode SPIR-V.
+/// \param module Salida: handle del módulo creado.
+void GraphicsPipeline::createShader(const std::vector<char>& code, VkShaderModule* module)
 {
-    VkShaderModuleCreateInfo info {};
+    VkShaderModuleCreateInfo info{};
     info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     info.codeSize = code.size();
     info.pCode = reinterpret_cast<const uint32_t*>(code.data());
@@ -130,12 +141,18 @@ void GraphicsPipeline::createShader(const std::vector<char>& code, VkShaderModul
     }
 }
 
-void GraphicsPipeline::bind(VkCommandBuffer commandBuffer) 
+/// \brief Enlaza la tubería al \c commandBuffer activo.
+/// \param commandBuffer Command buffer.
+void GraphicsPipeline::bind(VkCommandBuffer commandBuffer)
 {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 }
 
-void GraphicsPipeline::defaultConfig(PipelineConfig& config) 
+/// \brief Rellena \c config con valores por defecto razonables.
+/// \details Incluye estado de rasterización, profundidad, mezcla desactivada,
+/// viewport/scissor como dinámicos, input assembly en \c TRIANGLE_LIST, etc.
+/// \param config Referencia a configurar.
+void GraphicsPipeline::defaultConfig(PipelineConfig& config)
 {
     config.inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     config.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -187,7 +204,11 @@ void GraphicsPipeline::defaultConfig(PipelineConfig& config)
     config.attributes = Model::Vertex::attributeDescriptions();
 }
 
-void GraphicsPipeline::enableAlphaBlending(PipelineConfig& config) 
+/// \brief Activa la mezcla alfa predecible para el primer color attachment.
+/// \details Ajusta \c colorBlendAttachment y \c colorBlending para
+/// composiciones con transparencia estándar.
+/// \param config Referencia a \c PipelineConfig a modificar.
+void GraphicsPipeline::enableAlphaBlending(PipelineConfig& config)
 {
     config.colorBlendAttachment.blendEnable = VK_TRUE;
     config.colorBlendAttachment.colorWriteMask =
@@ -200,3 +221,4 @@ void GraphicsPipeline::enableAlphaBlending(PipelineConfig& config)
     config.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     config.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 }
+

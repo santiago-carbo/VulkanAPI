@@ -12,6 +12,9 @@
 #include <stdexcept>
 #include <cassert>
 
+/// \brief Construye el renderer asociado a una ventana y a un dispositivo Vulkan.
+/// \param window Ventana donde se presenta la imagen.
+/// \param device Dispositivo lógico Vulkan.
 Renderer::Renderer(Window& window, VulkanDevice& device)
     : window{window}, vulkanDevice{device} 
 {
@@ -25,11 +28,13 @@ Renderer::Renderer(Window& window, VulkanDevice& device)
         props.limits.timestampPeriod);
 }
 
+/// \brief Libera recursos asociados y destruye la swapchain.
 Renderer::~Renderer() 
 { 
     freeCommandBuffers(); 
 }
 
+/// \brief Recrea la swapchain cuando cambia el tamaño de la ventana o queda obsoleta.
 void Renderer::recreateSwapChain() 
 {
     VkExtent2D extent = window.getExtent();
@@ -59,6 +64,7 @@ void Renderer::recreateSwapChain()
     }
 }
 
+/// \brief Crea los command buffers para los frames en vuelo.
 void Renderer::createCommandBuffers() 
 {
     commandBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -78,6 +84,7 @@ void Renderer::createCommandBuffers()
     }
 }
 
+/// \brief Libera los command buffers creados.
 void Renderer::freeCommandBuffers() {
 
     vkFreeCommandBuffers(
@@ -88,6 +95,8 @@ void Renderer::freeCommandBuffers() {
     commandBuffers.clear();
 }
 
+/// \brief Comienza un frame. Adquiere imagen y prepara el command buffer.
+/// \return Command buffer listo para grabación o nullptr si se recreó la swapchain.
 VkCommandBuffer Renderer::beginFrame() 
 {
     assert(!isFrameStarted && "💥[Vulkan API] Can't call beginFrame while already in progress.");
@@ -123,6 +132,7 @@ VkCommandBuffer Renderer::beginFrame()
     return commandBuffer;
 }
 
+/// \brief Finaliza el frame. Cierra el command buffer y presenta.
 void Renderer::endFrame() 
 {
     assert(isFrameStarted && "💥[Vulkan API] Can't call endFrame while frame is not in progress.");
@@ -157,6 +167,8 @@ void Renderer::endFrame()
     currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
+/// \brief Inicia el render pass principal sobre el command buffer indicado.
+/// \param commandBuffer Command buffer devuelto por beginFrame.
 void Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer) 
 {
     assert(isFrameStarted && 
@@ -192,6 +204,8 @@ void Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
+/// \brief Finaliza el render pass principal sobre el command buffer indicado.
+/// \param commandBuffer Command buffer devuelto por beginFrame.
 void Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer) 
 {
     assert(isFrameStarted && 

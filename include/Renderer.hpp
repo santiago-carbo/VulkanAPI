@@ -11,78 +11,134 @@
 #include "SwapChain.hpp"
 #include "Perf.hpp"
 
-
-class Renderer 
+ /// \brief Gestor del ciclo de renderizado.
+ /// \details Administra la swapchain, los command buffers, el inicio y fin de frame
+ /// y la apertura y cierre del render pass. Expone utilidades para consultar
+ /// el render pass activo, la relación de aspecto y el índice de frame.
+ /// Integra el subsistema de métricas de rendimiento.
+class Renderer
 {
-    public:
-        Renderer(Window& window, VulkanDevice& device);
-        ~Renderer();
+public:
+    /// \brief Construye el renderer asociado a una ventana y a un dispositivo Vulkan.
+    /// \param window Ventana donde se presenta la imagen.
+    /// \param device Dispositivo lógico Vulkan.
+    Renderer(Window& window, VulkanDevice& device);
 
-        Renderer(const Renderer&) = delete;
-        Renderer& operator=(const Renderer&) = delete;
+    /// \brief Libera recursos asociados y destruye la swapchain.
+    ~Renderer();
 
-        VkRenderPass getSwapChainRenderPass() const 
-        { 
-            return (swapChain->getRenderPass()); 
-        }
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
 
-        size_t getSwapChainImageCount() const
-        {
-            return (swapChain->imageCount());
-        }
+    /// \brief Devuelve el render pass de la swapchain.
+    VkRenderPass getSwapChainRenderPass() const
+    {
+        return (swapChain->getRenderPass());
+    }
 
-        float getAspectRatio() const 
-        { 
-            return (swapChain->extentAspectRatio()); 
-        }
+    /// \brief Devuelve el número de imágenes de la swapchain.
+    size_t getSwapChainImageCount() const
+    {
+        return (swapChain->imageCount());
+    }
 
-        bool isFrameInProgress() const 
-        { 
-            return (isFrameStarted); 
-        }
+    /// \brief Devuelve la relación de aspecto del framebuffer actual.
+    float getAspectRatio() const
+    {
+        return (swapChain->extentAspectRatio());
+    }
 
-        VkCommandBuffer getCurrentCommandBuffer() const 
-        {
-            assert(isFrameStarted && 
-                "💥[Vulkan API] Cannot get command buffer when frame not in progress");
+    /// \brief Indica si hay un frame en curso.
+    bool isFrameInProgress() const
+    {
+        return (isFrameStarted);
+    }
 
-            return (commandBuffers[currentFrameIndex]);
-        }
+    /// \brief Devuelve el command buffer del frame en curso.
+    /// Debe llamarse entre beginFrame y endFrame.
+    VkCommandBuffer getCurrentCommandBuffer() const
+    {
+        assert(isFrameStarted &&
+            "💥[Vulkan API] Cannot get command buffer when frame not in progress");
 
-        int getFrameIndex() const 
-        {
-            assert(isFrameStarted && 
-                "💥[Vulkan API] Cannot get frame index when frame not in progress");
+        return (commandBuffers[currentFrameIndex]);
+    }
 
-            return (currentFrameIndex);
-        }
+    /// \brief Devuelve el índice del frame en curso.
+    /// Debe llamarse entre beginFrame y endFrame.
+    int getFrameIndex() const
+    {
+        assert(isFrameStarted &&
+            "💥[Vulkan API] Cannot get frame index when frame not in progress");
 
-        Perf& getPerf() 
-        { 
-            return perf; 
-        }
+        return (currentFrameIndex);
+    }
 
-        const Perf& getPerf() const 
-        { 
-            return perf; 
-        }
+    /// \brief Acceso al subsistema de métricas.
+    Perf& getPerf()
+    {
+        return perf;
+    }
 
-        VkCommandBuffer beginFrame();
-        void endFrame();
-        void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
-        void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+    /// \brief Acceso constante al subsistema de métricas.
+    const Perf& getPerf() const
+    {
+        return perf;
+    }
 
-    private:
-        void createCommandBuffers();
-        void freeCommandBuffers();
-        void recreateSwapChain();
+    VkFramebuffer Renderer::getCurrentFrameBuffer() const
+    {
+        return swapChain->getFrameBuffer(currentFrameIndex);
+    }
 
-        Window& window;
-        VulkanDevice& vulkanDevice;
-        std::unique_ptr<SwapChain> swapChain;
-        std::vector<VkCommandBuffer> commandBuffers;
-        uint32_t currentImageIndex;
-        int currentFrameIndex {0};
-        bool isFrameStarted {false};
-        Perf perf;
+
+    /// \brief Comienza un frame. Adquiere imagen y prepara el command buffer.
+    /// \return Command buffer listo para grabación o nullptr si se recreó la swapchain.
+    VkCommandBuffer beginFrame();
+
+    /// \brief Finaliza el frame. Cierra el command buffer y presenta.
+    void endFrame();
+
+    /// \brief Inicia el render pass principal sobre el command buffer indicado.
+    /// \param commandBuffer Command buffer devuelto por beginFrame.
+    void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
+
+    /// \brief Finaliza el render pass principal sobre el command buffer indicado.
+    /// \param commandBuffer Command buffer devuelto por beginFrame.
+    void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+
+private:
+    /// \brief Crea los command buffers para los frames en vuelo.
+    void createCommandBuffers();
+
+    /// \brief Libera los command buffers creados.
+    void freeCommandBuffers();
+
+    /// \brief Recrea la swapchain cuando cambia el tamaño de la ventana o queda obsoleta.
+    void recreateSwapChain();
+
+    /// Ventana asociada al renderer.
+    Window& window;
+
+    /// Dispositivo lógico Vulkan.
+    VulkanDevice& vulkanDevice;
+
+    /// Swapchain activa y recursos asociados.
+    std::unique_ptr<SwapChain> swapChain;
+
+    /// Conjunto de command buffers, uno por frame en vuelo.
+    std::vector<VkCommandBuffer> commandBuffers;
+
+    /// Índice de la imagen actual de la swapchain.
+    uint32_t currentImageIndex;
+
+    /// Índice del frame actual.
+    int currentFrameIndex{0};
+
+    /// Indica si hay un frame en curso.
+    bool isFrameStarted{ false };
+
+    /// Subsistema de métricas de rendimiento.
+    Perf perf;
 };
+

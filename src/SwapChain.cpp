@@ -14,12 +14,19 @@
 #include <iostream>
 #include <algorithm>
 
+/// \brief Construye la swapchain y los recursos asociados.
+/// \param deviceRef Dispositivo lógico y físico de Vulkan.
+/// \param windowExtent Extensión del framebuffer de la ventana.
 SwapChain::SwapChain(VulkanDevice& deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} 
 {
     init();
 }
 
+/// \brief Construye una nueva swapchain a partir de otra anterior.
+/// \param deviceRef Dispositivo lógico y físico de Vulkan.
+/// \param windowExtent Extensión del framebuffer de la ventana.
+/// \param previous Puntero compartido a la swapchain anterior para migrar recursos.
 SwapChain::SwapChain(
     VulkanDevice& deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previous)
     : device{deviceRef}, windowExtent{extent}, oldSwapChain{previous} 
@@ -28,6 +35,7 @@ SwapChain::SwapChain(
     oldSwapChain = nullptr;
 }
 
+/// \brief Libera todos los recursos propiedad de la swapchain.
 SwapChain::~SwapChain() 
 {
     for (VkImageView imageView : swapChainImageViews)
@@ -64,6 +72,7 @@ SwapChain::~SwapChain()
     }
 }
 
+/// \brief Inicializa la cadena de intercambio y los recursos derivados.
 void SwapChain::init() 
 {
     createSwapChain();
@@ -74,6 +83,7 @@ void SwapChain::init()
     createSyncObjects();
 }
 
+/// \brief Crea la \c VkSwapchainKHR según las capacidades de la superficie.
 void SwapChain::createSwapChain() 
 {
     SwapChainSupportDetails support = device.getSwapChainSupportDetails();
@@ -136,6 +146,7 @@ void SwapChain::createSwapChain()
     swapChainExtent = extent;
 }
 
+/// \brief Crea las vistas de imagen para cada imagen de la swapchain.
 void SwapChain::createImageViews() 
 {
     swapChainImageViews.resize(swapChainImages.size());
@@ -164,6 +175,7 @@ void SwapChain::createImageViews()
     }
 }
 
+/// \brief Crea las imágenes y vistas de profundidad.
 void SwapChain::createDepthResources() 
 {
     const VkFormat depthFormat = findDepthFormat();
@@ -215,6 +227,7 @@ void SwapChain::createDepthResources()
     }
 }
 
+/// \brief Crea el render pass principal de presentación.
 void SwapChain::createRenderPass() 
 {
     VkAttachmentDescription colorAttachment {};
@@ -273,6 +286,7 @@ void SwapChain::createRenderPass()
     }
 }
 
+/// \brief Crea un framebuffer por cada imagen de la swapchain.
 void SwapChain::createFramebuffers() 
 {
     swapChainFramebuffers.resize(imageCount());
@@ -301,6 +315,7 @@ void SwapChain::createFramebuffers()
     }
 }
 
+/// \brief Crea semáforos y fences para la sincronización por frame.
 void SwapChain::createSyncObjects() 
 {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -338,7 +353,9 @@ void SwapChain::createSyncObjects()
     }
 }
 
-
+/// \brief Selecciona formato de superficie entre los disponibles.
+/// \param availableFormats Lista de formatos soportados por la superficie.
+/// \return Formato elegido para color.
 VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(
     const std::vector<VkSurfaceFormatKHR>& formats) 
 {
@@ -353,6 +370,9 @@ VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(
     return (formats[0]);
 }
 
+/// \brief Selecciona el modo de presentación entre los disponibles.
+/// \param availablePresentModes Lista de modos soportados.
+/// \return Modo de presentación elegido.
 VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes) 
 {
     for (const VkPresentModeKHR& mode : modes)
@@ -365,6 +385,9 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     return (VK_PRESENT_MODE_FIFO_KHR);
 }
 
+/// \brief Determina la extensión final de la swapchain.
+/// \param capabilities Capacidades de la superficie de presentación.
+/// \return Extensión elegida.
 VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) 
 {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) 
@@ -388,6 +411,8 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilit
     }
 }
 
+/// \brief Busca un formato de profundidad compatible con el dispositivo.
+/// \return Formato de profundidad seleccionado.
 VkFormat SwapChain::findDepthFormat() 
 {
     return (device.findSupportedFormat(
@@ -396,6 +421,9 @@ VkFormat SwapChain::findDepthFormat()
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT));
 }
 
+/// \brief Adquiere el índice de la siguiente imagen disponible.
+/// \param imageIndex Salida con el índice de imagen adquirido.
+/// \return Resultado de la operación de adquisición.
 VkResult SwapChain::acquireNextImage(uint32_t* imageIndex) 
 {
     vkWaitForFences(
@@ -416,6 +444,10 @@ VkResult SwapChain::acquireNextImage(uint32_t* imageIndex)
     return (result);
 }
 
+/// \brief Envía los command buffers para su ejecución y presenta la imagen.
+/// \param buffers Puntero al command buffer grabado del frame.
+/// \param imageIndex Índice de la imagen que se va a presentar.
+/// \return Resultado de la operación de presentación.
 VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex) 
 {
     if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) 
