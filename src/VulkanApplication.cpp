@@ -290,6 +290,93 @@ void VulkanApplication::loadGameObjects()
 {
     std::shared_ptr<Model> model = Model::fromFile(*vulkanDevice, "models/room.obj");
 
+    Model::Builder builder;
+    builder.vertices = 
+    {
+        {{+0.5f,-0.5f,-0.5f}, {1,1,1}, {+1,0,0}, {0,0}},
+        {{+0.5f,+0.5f,-0.5f}, {1,1,1}, {+1,0,0}, {0,1}},
+        {{+0.5f,+0.5f,+0.5f}, {1,1,1}, {+1,0,0}, {1,1}},
+        {{+0.5f,-0.5f,+0.5f}, {1,1,1}, {+1,0,0}, {1,0}},
+
+        {{-0.5f,-0.5f,+0.5f}, {1,1,1}, {-1,0,0}, {0,0}},
+        {{-0.5f,+0.5f,+0.5f}, {1,1,1}, {-1,0,0}, {0,1}},
+        {{-0.5f,+0.5f,-0.5f}, {1,1,1}, {-1,0,0}, {1,1}},
+        {{-0.5f,-0.5f,-0.5f}, {1,1,1}, {-1,0,0}, {1,0}},
+
+        {{-0.5f,+0.5f,-0.5f}, {1,1,1}, {0,+1,0}, {0,0}},
+        {{-0.5f,+0.5f,+0.5f}, {1,1,1}, {0,+1,0}, {0,1}},
+        {{+0.5f,+0.5f,+0.5f}, {1,1,1}, {0,+1,0}, {1,1}},
+        {{+0.5f,+0.5f,-0.5f}, {1,1,1}, {0,+1,0}, {1,0}},
+
+        {{-0.5f,-0.5f,+0.5f}, {1,1,1}, {0,-1,0}, {0,0}},
+        {{-0.5f,-0.5f,-0.5f}, {1,1,1}, {0,-1,0}, {0,1}},
+        {{+0.5f,-0.5f,-0.5f}, {1,1,1}, {0,-1,0}, {1,1}},
+        {{+0.5f,-0.5f,+0.5f}, {1,1,1}, {0,-1,0}, {1,0}},
+
+        {{-0.5f,-0.5f,+0.5f}, {1,1,1}, {0,0,+1}, {0,0}},
+        {{+0.5f,-0.5f,+0.5f}, {1,1,1}, {0,0,+1}, {1,0}},
+        {{+0.5f,+0.5f,+0.5f}, {1,1,1}, {0,0,+1}, {1,1}},
+        {{-0.5f,+0.5f,+0.5f}, {1,1,1}, {0,0,+1}, {0,1}},
+
+        {{+0.5f,-0.5f,-0.5f}, {1,1,1}, {0,0,-1}, {0,0}},
+        {{-0.5f,-0.5f,-0.5f}, {1,1,1}, {0,0,-1}, {1,0}},
+        {{-0.5f,+0.5f,-0.5f}, {1,1,1}, {0,0,-1}, {1,1}},
+        {{+0.5f,+0.5f,-0.5f}, {1,1,1}, {0,0,-1}, {0,1}},
+    };
+
+    builder.indices = 
+    {
+        0,1,2,  0,2,3,
+        4,5,6,  4,6,7,
+        8,9,10, 8,10,11,
+        12,13,14, 12,14,15,
+        16,17,18, 16,18,19,
+        20,21,22, 20,22,23,
+    };
+    /*
+    auto cubeModel = std::make_shared<Model>(*vulkanDevice, builder);
+
+    GameObject cube = GameObject::create();
+    cube.model = std::move(cubeModel);
+    cube.color = {1.f, 1.f, 1.f};
+    cube.transform.translation = {0.f, 0.f, 0.f};
+    cube.transform.scale = {1.f, 1.f, 1.f};
+    gameObjects.emplace(cube.getId(), std::move(cube));
+
+    const int distancex = 4;
+    const int distancey = 5;
+    const int distancez = 5;
+    const float s = 2.0f;
+    const glm::vec3 scale = {0.9f, 0.9f, 0.9f};
+    const float inicialx = -0.5f * (distancex - 1) * s;
+    const float inicialy = -0.5f * (distancey - 1) * s;
+    const float inicialz = -0.5f * (distancez - 1) * s;
+
+    for (int ix = 0; ix < distancex; ++ix)
+    {
+        for (int iy = 0; iy < distancey; ++iy)
+        {
+            for (int iz = 0; iz < distancez; ++iz)
+            {
+
+                GameObject cube = GameObject::create();
+
+                cube.model = cubeModel;
+                cube.color = {1.0f, 1.0f, 1.0f};
+                cube.transform.translation = 
+                {
+                    inicialx + ix * s,
+                    inicialy + iy * s,
+                    inicialz + iz * s
+                };
+                cube.transform.scale = scale;
+                gameObjects.emplace(cube.getId(), std::move(cube));
+            }
+        }
+    }
+    */
+
+
     GameObject room = GameObject::create();
     room.model = model;
     room.transform.scale = {0.5f, 0.5f, 0.5f};
